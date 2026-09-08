@@ -55,29 +55,21 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (serviceRepository.count() == 0) {
             List<Service> services = new ArrayList<>();
 
-            services.add(createService("Signature Haircut & Styling",
-                    "Bespoke haircut tailored to your head shape, including hair wash, hot towel rinse, and premium pomade styling.",
-                    45, new BigDecimal("45.00"), "haircut"));
+            services.add(createService("Haircut",
+                    "Professional haircut and styling tailored to your preference.",
+                    30, new BigDecimal("25.00"), "haircut"));
 
-            services.add(createService("Executive Skin Fade",
-                    "Ultra-clean taper or zero skin fade crafted with precision foil shaver and straight razor edge-up.",
-                    50, new BigDecimal("50.00"), "haircut"));
+            services.add(createService("Shaving",
+                    "Classic clean shave or beard trim with hot towel treatment.",
+                    20, new BigDecimal("15.00"), "shave"));
 
-            services.add(createService("Royal Hot Towel Shave",
-                    "Traditional straight razor shave with multi-layered hot towel treatment, pre-shave oil, and soothing balm.",
-                    35, new BigDecimal("35.00"), "shave"));
+            services.add(createService("Both (Haircut & Shaving)",
+                    "Complete grooming combo package including precision haircut and clean shave.",
+                    45, new BigDecimal("35.00"), "combo"));
 
-            services.add(createService("Beard Sculpt & Line-Up",
-                    "Detailed beard trimming, length shaping, cheek razor line-up, and organic beard oil hydration.",
-                    30, new BigDecimal("30.00"), "beard"));
-
-            services.add(createService("VIP Master Grooming Package",
-                    "The ultimate royal treatment combining Signature Haircut, Royal Hot Towel Shave, Detox Facial, and scalp therapy.",
-                    80, new BigDecimal("85.00"), "vip"));
-
-            services.add(createService("Detox Scalp & Facial Spa",
-                    "Deep cleansing charcoal mask, pore steam treatment, scalp exfoliation, and relaxing face massage.",
-                    30, new BigDecimal("40.00"), "facial"));
+            services.add(createService("Facial",
+                    "Deep cleansing, exfoliating steam facial and rejuvenating treatment.",
+                    30, new BigDecimal("30.00"), "facial"));
 
             serviceRepository.saveAll(services);
             System.out.println("✂️ Grooming services seeded successfully (" + services.size() + " services created)");

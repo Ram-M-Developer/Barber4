@@ -43,7 +43,7 @@ async function fetchServices() {
     const res = await fetch('/api/services');
     const data = await res.json();
     if (res.ok) {
-      services = data.data;
+      services = (data.data || []).sort((a, b) => a.id - b.id);
       populateServiceDropdowns();
     }
   } catch (error) {
@@ -58,7 +58,7 @@ function populateServiceDropdowns() {
 
   const optionsHTML = services.map(s => `
     <option value="${s.id}" data-price="${s.price}" data-duration="${s.duration_minutes}">
-      ${s.name} ($${parseFloat(s.price).toFixed(2)})
+      ${s.name} (\u20B9${parseFloat(s.price).toFixed(2)})
     </option>
   `).join('');
 
@@ -161,7 +161,7 @@ function renderSeats() {
 
     const isServing = (seat.status === 'occupied') || (custName !== '---' && seat.status !== 'waiting');
     const statusClass = isServing ? 'occupied' : 'available';
-    const statusBadge = isServing ? '🔴 CURRENTLY SERVING' : '🟢 AVAILABLE';
+    const statusBadge = isServing ? 'CURRENTLY SERVING' : 'AVAILABLE';
 
     return `
       <div class="seat-card-compact ${statusClass}">
@@ -272,25 +272,25 @@ function renderTimeSlots() {
     let actionBtn = '';
 
     if (assignedCount === 0) {
-      statusPill = `<span class="slot-badge-pill available-2"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> AVAILABLE</span>`;
+      statusPill = `<span class="slot-badge-pill available-2">AVAILABLE</span>`;
       actionBtn = `
         <button type="button" class="btn btn-sm btn-primary fw-bold py-1 px-3" onclick="openSlotBookingModal('${s.timeSlot}')" style="font-size:0.75rem;">
-          <i class="fa-solid fa-calendar-check me-1"></i>Book
+          Book
         </button>
       `;
     } else if (assignedCount === 1) {
-      statusPill = `<span class="slot-badge-pill available-1"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> 1 SEAT AVAILABLE</span>`;
+      statusPill = `<span class="slot-badge-pill available-1">1 SEAT AVAILABLE</span>`;
       actionBtn = `
         <button type="button" class="btn btn-sm btn-primary fw-bold py-1 px-3" onclick="openSlotBookingModal('${s.timeSlot}')" style="font-size:0.75rem;">
-          <i class="fa-solid fa-calendar-check me-1"></i>Book
+          Book
         </button>
       `;
     } else {
-      statusPill = `<span class="slot-badge-pill full"><i class="fa-solid fa-lock" style="font-size:0.5rem;"></i> FULL</span>`;
+      statusPill = `<span class="slot-badge-pill full">FULL</span>`;
       actionBtn = `
         <div class="d-flex gap-1 align-items-center">
           <button type="button" class="btn btn-sm btn-secondary fw-bold py-1 px-2.5" disabled style="font-size:0.72rem;" title="2 / 2 Seats Filled">
-            <i class="fa-solid fa-lock me-1"></i>Book Locked
+            Book Locked
           </button>
           <button type="button" class="btn btn-sm btn-outline-primary fw-bold py-1 px-2" onclick="openQueueModal()" style="font-size:0.72rem;" title="Join FIFO Waiting Queue">
             Join Queue
@@ -302,7 +302,7 @@ function renderTimeSlots() {
     if (s.isCurrentCustomer) {
       actionBtn = `
         <button type="button" class="btn btn-sm btn-outline-success fw-bold py-1 px-2.5" disabled style="font-size:0.75rem;">
-          <i class="fa-solid fa-check me-1"></i>Your Booking
+          Your Booking
         </button>
       `;
     }
@@ -350,7 +350,6 @@ function renderWaitingQueue() {
   if (count === 0) {
     listEl.innerHTML = `
       <div class="text-center py-4 text-muted small bg-light rounded border p-3">
-        <i class="fa-solid fa-mug-hot fs-3 text-secondary d-block mb-2"></i>
         <div class="fw-bold text-dark fs-6 mb-1">No customers waiting</div>
         <div class="text-muted" style="font-size:0.75rem;">New bookings receive direct seat allocation.</div>
       </div>
@@ -370,7 +369,7 @@ function renderWaitingQueue() {
             <div class="text-muted" style="font-size:0.72rem;">Token: ${tokNum}</div>
           </div>
         </div>
-        <span class="badge bg-warning text-dark" style="font-size:0.65rem;"><i class="fa-solid fa-clock me-1"></i>Waiting</span>
+        <span class="badge bg-warning text-dark" style="font-size:0.65rem;">Waiting</span>
       </div>
     `;
   }).join('');
@@ -418,7 +417,7 @@ function openSlotBookingModal(timeSlot) {
   if (srvSelect && services.length > 0) {
     srvSelect.innerHTML = services.map(s => `
       <option value="${s.id}" data-price="${s.price}">
-        ${s.name} — $${parseFloat(s.price).toFixed(2)} (${s.duration_minutes}m)
+        ${s.name} — \u20B9${parseFloat(s.price).toFixed(2)} (${s.duration_minutes}m)
       </option>
     `).join('');
     updateSlotModalPrice();
@@ -433,8 +432,8 @@ function updateSlotModalPrice() {
   const srvSelect = document.getElementById('slot-service-select');
   const opt = srvSelect.options[srvSelect.selectedIndex];
   if (opt) {
-    const price = opt.getAttribute('data-price') || '45.00';
-    document.getElementById('slot-modal-price').textContent = `$${parseFloat(price).toFixed(2)}`;
+    const price = opt.getAttribute('data-price') || '25.00';
+    document.getElementById('slot-modal-price').textContent = `\u20B9${parseFloat(price).toFixed(2)}`;
   }
 }
 window.updateSlotModalPrice = updateSlotModalPrice;
@@ -462,7 +461,8 @@ async function handleConfirmSlotBooking(event) {
   const timeSlot = document.getElementById('slot-modal-time').value;
   const appointmentDate = document.getElementById('slot-modal-date').value;
   const serviceId = document.getElementById('slot-service-select').value;
-  const notes = document.getElementById('slot-notes').value;
+  const notesEl = document.getElementById('slot-notes');
+  const notes = notesEl ? notesEl.value : '';
   const paymentMethod = document.getElementById('slot-payment-method').value;
 
   const submitBtn = document.getElementById('btn-submit-slot-booking');
@@ -509,7 +509,7 @@ async function handleConfirmSlotBooking(event) {
     fetchTimeSlots(selectedDate);
   } finally {
     submitBtn.disabled = false;
-    submitBtn.innerHTML = `<i class="fa-solid fa-check me-1"></i>Confirm &amp; Book Slot`;
+    submitBtn.innerHTML = `Confirm &amp; Book Slot`;
   }
 }
 window.handleConfirmSlotBooking = handleConfirmSlotBooking;
@@ -546,10 +546,10 @@ function openQueueModal() {
   if (sel) {
     if (services && services.length > 0) {
       sel.innerHTML = services.map(s => `
-        <option value="${s.id}">${s.name} — $${parseFloat(s.price).toFixed(2)} (${s.duration_minutes}m)</option>
+        <option value="${s.id}">${s.name} — \u20B9${parseFloat(s.price).toFixed(2)} (${s.duration_minutes}m)</option>
       `).join('');
     } else {
-      sel.innerHTML = `<option value="1">Signature Haircut &amp; Styling — $45.00 (45m)</option>`;
+      sel.innerHTML = `<option value="1">Haircut — \u20B925.00 (30m)</option>`;
     }
   }
   const modal = new bootstrap.Modal(document.getElementById('queueModal'));
@@ -600,7 +600,7 @@ async function handleJoinQueueSubmit(event) {
     showToast(err.message, 'danger');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i class="fa-solid fa-ticket me-1"></i>Get Digital Token &amp; Join Queue`;
+    btn.innerHTML = `Get Digital Token &amp; Join Queue`;
   }
 }
 window.handleJoinQueueSubmit = handleJoinQueueSubmit;
@@ -894,7 +894,7 @@ function calculateBookingSummary() {
 
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setEl('summary-duration', `${duration} min`);
-  setEl('summary-price', `$${parseFloat(price).toFixed(2)}`);
+  setEl('summary-price', `\u20B9${parseFloat(price).toFixed(2)}`);
   setEl('summary-service-name', name);
 
   // Update datetime summary
@@ -1083,7 +1083,7 @@ async function confirmBooking(event) {
       throw new Error(data.message || 'Failed to confirm appointment.');
     }
 
-    showToast(`🎉 Booking Confirmed! $${parseFloat(data.data.service.price).toFixed(2)} has been paid from your wallet.`, 'success');
+    showToast(`🎉 Booking Confirmed! \u20B9${parseFloat(data.data.service.price).toFixed(2)} has been paid from your wallet.`, 'success');
 
     // Clean timer listeners & close modal
     clearInterval(reservationTimer);

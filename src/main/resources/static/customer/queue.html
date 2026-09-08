@@ -80,7 +80,7 @@
         <div class="fb-logo-icon">
           <i class="fa-solid fa-scissors"></i>
         </div>
-        <span class="d-none d-sm-inline fw-bold">BarberEase</span>
+        <span class="d-none d-sm-inline fw-bold">Beauty Salon</span>
       </a>
       <div class="fb-search-bar d-none d-md-flex">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -280,10 +280,10 @@
       const data = await res.json();
       if (res.ok && data.data) {
         const sel = document.getElementById('qp-service');
-        data.data.forEach(s => {
+        data.data.sort((a, b) => a.id - b.id).forEach(s => {
           const opt = document.createElement('option');
           opt.value = s.id;
-          opt.textContent = `${s.name} ($${parseFloat(s.price).toFixed(2)})`;
+          opt.textContent = `${s.name} (\u20B9${parseFloat(s.price).toFixed(2)})`;
           opt.setAttribute('data-duration', s.duration_minutes);
           sel.appendChild(opt);
         });
@@ -588,7 +588,6 @@
         </button>` : (st === 'completed' || st === 'served' ? `<button class="btn btn-primary btn-sm w-100 fw-bold" onclick="dismissCompletedQueueAndGetNext(${entry.id})">
           <i class="fa-solid fa-ticket me-1"></i>Get Next Token
         </button>` : '')}`;
-    }
     }
 
     async function joinFromQueuePage(event) {

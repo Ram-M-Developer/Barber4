@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Account — BarberEase</title>
-  <meta name="description" content="Register your BarberEase account to book barber chairs, join digital queues, and manage your appointments.">
+  <title>Create Account - Beauty Salon</title>
+  <meta name="description" content="Register your Beauty Salon account to book appointments, join digital queues, and manage your visits.">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="auth-wrapper" style="background-color: var(--be-dark);">
@@ -15,13 +14,8 @@
 
     <!-- Brand -->
     <div class="text-center mb-4">
-      <div class="d-flex justify-content-center mb-2">
-        <div class="fb-logo-icon" style="width:48px;height:48px;font-size:1.5rem">
-          <i class="fa-solid fa-scissors"></i>
-        </div>
-      </div>
-      <h3 class="fw-bold text-dark mb-0">BarberEase</h3>
-      <p class="text-muted small mt-1">Create your customer account in seconds</p>
+      <h3 class="fw-bold text-dark mb-1">Beauty Salon</h3>
+      <p class="text-muted small mb-0">Create your customer account in seconds</p>
     </div>
 
     <!-- Step Wizard Indicator -->
@@ -31,7 +25,7 @@
         <div class="step-line" id="step-line-1"></div>
         <div class="step-dot" id="step-dot-2">2</div>
         <div class="step-line" id="step-line-2"></div>
-        <div class="step-dot" id="step-dot-3"><i class="fa-solid fa-check" style="font-size:0.7rem"></i></div>
+        <div class="step-dot" id="step-dot-3">3</div>
       </div>
       <div class="step-label-row mt-2">
         <span class="step-label active" id="step-label-1">Personal Info</span>
@@ -49,66 +43,42 @@
       <div class="step-pane active" id="step-pane-1">
         <div class="mb-3">
           <label for="name" class="form-label">Full Name <span style="color:#60a5fa">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-            <input type="text" class="form-control" id="name" required
-              placeholder="John Doe" autocomplete="name">
-          </div>
+          <input type="text" class="form-control" id="name" required
+            placeholder="John Doe" autocomplete="name">
           <div class="invalid-feedback" id="name-error"></div>
         </div>
 
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="email" class="form-label">Email Address <span style="color:#60a5fa">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
-              <input type="email" class="form-control" id="email" required
-                placeholder="name@example.com" autocomplete="email">
-              <span class="input-group-text" id="email-check-icon" style="min-width:40px;justify-content:center">
-                <i class="fa-solid fa-circle-notch fa-spin text-muted" style="font-size:0.75rem;display:none" id="email-spinner"></i>
-              </span>
-            </div>
+            <input type="email" class="form-control" id="email" required
+              placeholder="name@example.com" autocomplete="email">
             <div class="mt-1" id="email-status"></div>
           </div>
           <div class="col-md-6 mb-3">
             <label for="phone" class="form-label">Phone Number <span style="color:#60a5fa">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
-              <input type="tel" class="form-control" id="phone" required
-                placeholder="+1 555-1234" autocomplete="tel">
-            </div>
+            <input type="tel" class="form-control" id="phone" required
+              placeholder="+91 98765 43210" autocomplete="tel">
             <div class="invalid-feedback" id="phone-error"></div>
           </div>
         </div>
 
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="gender" class="form-label">Gender</label>
-            <select class="form-select" id="gender">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other / Prefer not to say</option>
-            </select>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="dob" class="form-label">Date of Birth</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fa-solid fa-cake-candles"></i></span>
-              <input type="date" class="form-control" id="dob">
-            </div>
-          </div>
+        <div class="mb-3">
+          <label for="gender" class="form-label">Gender</label>
+          <select class="form-select" id="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other / Prefer not to say</option>
+          </select>
         </div>
 
         <div class="mb-4">
           <label for="address" class="form-label">Address <span class="text-muted small">(optional)</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fa-solid fa-location-dot"></i></span>
-            <input type="text" class="form-control" id="address" placeholder="123 Main St, City">
-          </div>
+          <input type="text" class="form-control" id="address" placeholder="123 Main St, City">
         </div>
 
         <button type="button" class="fb-btn-primary w-100 py-2 fs-6" onclick="goToStep(2)" id="step1-next">
-          Next — Security Setup <i class="fa-solid fa-arrow-right ms-2"></i>
+          Next - Security Setup
         </button>
       </div>
 
@@ -117,16 +87,9 @@
 
         <div class="mb-3">
           <label for="password" class="form-label">Password <span style="color:var(--be-primary)">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
-            <input type="password" class="form-control" id="password" required
-              placeholder="Create a strong password" autocomplete="new-password"
-              oninput="checkPasswordStrength(this.value)">
-            <button type="button" class="input-group-text border-0" style="cursor:pointer;background:#f8fafc;border:1px solid var(--be-border)!important;"
-              onclick="togglePassword('password', this)">
-              <i class="fa-solid fa-eye text-muted" id="pwd-eye"></i>
-            </button>
-          </div>
+          <input type="password" class="form-control" id="password" required
+            placeholder="Create a strong password" autocomplete="new-password"
+            oninput="checkPasswordStrength(this.value)">
           <!-- Strength Bar -->
           <div class="password-strength-bar mt-2">
             <div class="password-strength-fill" id="pwd-strength-fill"></div>
@@ -139,46 +102,19 @@
 
         <div class="mb-4">
           <label for="confirm-password" class="form-label">Confirm Password <span style="color:var(--be-primary)">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fa-solid fa-lock-open"></i></span>
-            <input type="password" class="form-control" id="confirm-password" required
-              placeholder="Repeat your password" autocomplete="new-password"
-              oninput="checkPasswordMatch()">
-            <button type="button" class="input-group-text border-0" style="cursor:pointer;background:#f8fafc;border:1px solid var(--be-border)!important;"
-              onclick="togglePassword('confirm-password', this)">
-              <i class="fa-solid fa-eye text-muted"></i>
-            </button>
-          </div>
+          <input type="password" class="form-control" id="confirm-password" required
+            placeholder="Repeat your password" autocomplete="new-password"
+            oninput="checkPasswordMatch()">
           <div class="mt-1" id="pwd-match-status"></div>
         </div>
 
-        <!-- Security Checklist -->
-        <div class="mb-4 p-3 rounded" style="background:#f8fafc;border:1px solid var(--be-border)">
-          <p class="text-muted small fw-bold mb-2">Password Requirements:</p>
-          <div class="row g-1">
-            <div class="col-6"><div class="small" id="req-length"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.5rem"></i>8+ characters</div></div>
-            <div class="col-6"><div class="small" id="req-upper"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.5rem"></i>Uppercase letter</div></div>
-            <div class="col-6"><div class="small" id="req-number"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.5rem"></i>Number</div></div>
-            <div class="col-6"><div class="small" id="req-special"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.5rem"></i>Special char</div></div>
-          </div>
-        </div>
-
-        <!-- Terms Checkbox -->
-        <div class="mb-4">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="agree-terms" required>
-            <label class="form-check-label small text-muted" for="agree-terms">
-              I agree to BarberEase's <a href="#" class="text-decoration-none" style="color:var(--be-primary)">Terms of Service</a> and <a href="#" class="text-decoration-none" style="color:var(--be-primary)">Privacy Policy</a>
-            </label>
-          </div>
-        </div>
 
         <div class="d-flex gap-2">
           <button type="button" class="fb-btn-secondary w-50 py-2" onclick="goToStep(1)">
-            <i class="fa-solid fa-arrow-left me-2"></i> Back
+            Back
           </button>
           <button type="submit" class="fb-btn-primary w-50 py-2" id="submit-btn">
-            <i class="fa-solid fa-user-plus me-2"></i> Create Account
+            Create Account
           </button>
         </div>
       </div>
@@ -186,15 +122,12 @@
       <!-- ── STEP 3: Success ── -->
       <div class="step-pane" id="step-pane-3">
         <div class="booking-confirmed-card py-4" style="background:#f8fafc;border:1px solid var(--be-border)">
-          <div class="check-circle" style="background:var(--be-primary)">
-            <i class="fa-solid fa-check"></i>
-          </div>
           <h4 class="fw-bold mb-1 text-dark">Account Created!</h4>
-          <p class="text-muted small mb-3">Welcome to BarberEase, <strong id="success-name" class="text-dark"></strong></p>
+          <p class="text-muted small mb-3">Welcome to Beauty Salon, <strong id="success-name" class="text-dark"></strong></p>
           <div class="loading-dots">
             <span></span><span></span><span></span>
           </div>
-          <p class="text-muted small mt-2">Redirecting to your dashboard…</p>
+          <p class="text-muted small mt-2">Redirecting to your dashboard...</p>
         </div>
       </div>
 
@@ -231,13 +164,13 @@
         if (i < step) {
           dot.classList.add('completed');
           label.classList.add('completed');
-          dot.innerHTML = '<i class="fa-solid fa-check" style="font-size:0.7rem"></i>';
+          dot.textContent = i;
         } else if (i === step) {
           dot.classList.add('active');
           label.classList.add('active');
-          if (i < 3) dot.textContent = i;
+          dot.textContent = i;
         } else {
-          if (i < 3) dot.textContent = i;
+          dot.textContent = i;
         }
       }
 
@@ -282,7 +215,7 @@
     function showToastLocal(msg, type = 'danger') {
       const ac = document.getElementById('alert-container');
       ac.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show py-2 small" role="alert">
-        <i class="fa-solid fa-circle-exclamation me-1"></i>${msg}
+        ${msg}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>`;
       setTimeout(() => { if(ac) ac.innerHTML = ''; }, 4000);
@@ -299,33 +232,14 @@
       const hasNumber = /[0-9]/.test(pwd);
       const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
 
-      // Update requirement bullets
-      updateReq('req-length', hasLength);
-      updateReq('req-upper', hasUpper);
-      updateReq('req-number', hasNumber);
-      updateReq('req-special', hasSpecial);
-
       const score = [hasLength, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
       fill.className = 'password-strength-fill';
 
       if (!pwd) { fill.style.width = '0%'; label.textContent = 'Enter a password'; text.textContent = ''; return; }
-      if (score === 1) { fill.classList.add('strength-weak'); label.textContent = 'Weak password'; text.className = 'strength-label text-danger'; text.textContent = '⚠️'; }
-      else if (score === 2) { fill.classList.add('strength-fair'); label.textContent = 'Fair password'; text.className = 'strength-label text-warning'; text.textContent = '🔶'; }
-      else if (score === 3) { fill.classList.add('strength-good'); label.textContent = 'Good password'; text.className = 'strength-label text-info'; text.textContent = '👍'; }
-      else if (score === 4) { fill.classList.add('strength-strong'); label.textContent = 'Strong password'; text.className = 'strength-label text-success'; text.textContent = '✅'; }
-    }
-
-    function updateReq(id, met) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const icon = el.querySelector('i');
-      if (met) {
-        icon.className = 'fa-solid fa-circle-check text-success me-1';
-        el.style.color = 'var(--be-green)';
-      } else {
-        icon.className = 'fa-solid fa-circle text-secondary me-1';
-        el.style.color = '';
-      }
+      if (score === 1) { fill.classList.add('strength-weak'); label.textContent = 'Weak password'; text.className = 'strength-label text-danger'; text.textContent = 'Weak'; }
+      else if (score === 2) { fill.classList.add('strength-fair'); label.textContent = 'Fair password'; text.className = 'strength-label text-warning'; text.textContent = 'Fair'; }
+      else if (score === 3) { fill.classList.add('strength-good'); label.textContent = 'Good password'; text.className = 'strength-label text-info'; text.textContent = 'Good'; }
+      else if (score === 4) { fill.classList.add('strength-strong'); label.textContent = 'Strong password'; text.className = 'strength-label text-success'; text.textContent = 'Strong'; }
     }
 
     function checkPasswordMatch() {
@@ -334,21 +248,9 @@
       const status = document.getElementById('pwd-match-status');
       if (!conf) { status.innerHTML = ''; return; }
       if (pwd === conf) {
-        status.innerHTML = '<span class="small text-success"><i class="fa-solid fa-check me-1"></i>Passwords match</span>';
+        status.innerHTML = '<span class="small text-success">Passwords match</span>';
       } else {
-        status.innerHTML = '<span class="small text-danger"><i class="fa-solid fa-times me-1"></i>Passwords do not match</span>';
-      }
-    }
-
-    function togglePassword(fieldId, btn) {
-      const field = document.getElementById(fieldId);
-      const icon = btn.querySelector('i');
-      if (field.type === 'password') {
-        field.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash text-muted';
-      } else {
-        field.type = 'password';
-        icon.className = 'fa-solid fa-eye text-muted';
+        status.innerHTML = '<span class="small text-danger">Passwords do not match</span>';
       }
     }
 
@@ -356,20 +258,15 @@
     let emailCheckTimer;
     document.getElementById('email').addEventListener('input', function() {
       const status = document.getElementById('email-status');
-      const spinner = document.getElementById('email-spinner');
       clearTimeout(emailCheckTimer);
       status.innerHTML = '';
       if (!this.value.includes('@')) return;
-      spinner.style.display = 'inline-block';
       emailCheckTimer = setTimeout(async () => {
-        spinner.style.display = 'none';
-        // Simulate check (in real app: GET /api/auth/check-email?email=...)
-        status.innerHTML = '<span class="small text-success"><i class="fa-solid fa-check me-1"></i>Email looks good</span>';
+        status.innerHTML = '<span class="small text-success">Email looks good</span>';
       }, 800);
     });
 
-    // ── Override handleRegister to show step 3 on success ──
-    const _origHandleRegister = handleRegister;
+    // ── Handle Register ──
     window.handleRegister = async function(event) {
       event.preventDefault();
 
@@ -378,10 +275,6 @@
       const conf = document.getElementById('confirm-password').value;
       if (pwd !== conf) {
         showToastLocal('Passwords do not match!', 'danger');
-        return;
-      }
-      if (!document.getElementById('agree-terms').checked) {
-        showToastLocal('Please accept the Terms of Service to continue.', 'warning');
         return;
       }
 
@@ -414,10 +307,10 @@
         // Show success step
         document.getElementById('success-name').textContent = name.split(' ')[0];
         goToStep(3);
-        setTimeout(() => { window.location.href = '/customer/dashboard.html'; }, 2500);
+        setTimeout(() => { window.location.href = '/customer/dashboard.html'; }, 2000);
       } catch (err) {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-user-plus me-2"></i> Create Account';
+        btn.innerHTML = 'Create Account';
         showToastLocal(err.message, 'danger');
       }
     };

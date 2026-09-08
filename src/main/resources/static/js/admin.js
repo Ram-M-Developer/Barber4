@@ -1,5 +1,5 @@
 /**
- * BarberEase — Complete Real-Time Admin Panel
+ * Beauty Salon — Complete Real-Time Admin Panel
  * Manages 2 Service Seats, Time Slots / Bookings, and Strict FIFO Waiting Queue
  */
 
@@ -10,7 +10,7 @@ let pendingFinishSeatName = '';
 let pendingFinishCustomerName = '';
 let pollTimer = null;
 
-// Show Admin Toast Notification
+// Show Admin Toast Notification (No icons)
 function showAdminToast(message, type = 'danger') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -24,7 +24,6 @@ function showAdminToast(message, type = 'danger') {
   toast.innerHTML = `
     <div class="d-flex">
       <div class="toast-body small fw-semibold">
-        <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} me-1.5"></i>
         ${message}
       </div>
       <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -44,9 +43,6 @@ function checkAdminAuth() {
   const userType = localStorage.getItem('barber_user_type');
 
   if (!token || userType !== 'admin') {
-    localStorage.removeItem('barber_token');
-    localStorage.removeItem('barber_user');
-    localStorage.removeItem('barber_user_type');
     window.location.href = '/auth/admin-login.html';
     return false;
   }
@@ -63,17 +59,13 @@ function checkAdminAuth() {
 // Format local date for header
 function updateAdminClock() {
   const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  const clockEl = document.getElementById('admin-clock-label');
-  if (clockEl) clockEl.textContent = timeStr;
-
   const dateStr = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
   const dateEl = document.getElementById('admin-date-label');
   if (dateEl) dateEl.textContent = dateStr;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. LEFT COLUMN: 2 SERVICE SEATS
+// 1. LEFT COLUMN: 2 SERVICE SEATS (Matches Customer Layout)
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function fetchAdminSeats() {
@@ -100,7 +92,7 @@ async function fetchAdminSeats() {
     console.error('Error fetching admin seats:', err);
     container.innerHTML = `
       <div class="alert alert-danger p-2 small">
-        <i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load seats.
+        Failed to load seats.
       </div>
     `;
   }
@@ -120,13 +112,11 @@ function renderAdminSeats(chairs) {
   seats.forEach(seat => {
     const isOccupied = seat.status === 'occupied' || (seat.customer_name && seat.customer_name !== '---');
     const statusClass = isOccupied ? 'occupied' : 'available';
-    const statusBadge = isOccupied
-      ? '<span class="seat-status-badge occupied">🔴 CURRENTLY SERVING</span>'
-      : '<span class="seat-status-badge available">🟢 AVAILABLE</span>';
+    const statusBadge = isOccupied ? 'CURRENTLY SERVING' : 'AVAILABLE';
 
     const customerDisplay = isOccupied
       ? `<span class="fw-bold text-dark fs-6">${seat.customer_name}</span>`
-      : `<span class="text-muted fst-italic">No customer</span>`;
+      : `<span class="text-muted fst-italic">---</span>`;
 
     const timeDisplay = isOccupied && seat.time && seat.time !== '---'
       ? `<span class="fw-semibold text-primary">${seat.time}</span>`
@@ -135,12 +125,12 @@ function renderAdminSeats(chairs) {
     const finishBtn = isOccupied
       ? `
         <button class="admin-finish-btn mt-3" onclick="promptFinishService(${seat.id || seat.chair_number}, 'Seat ${seat.chair_number}', '${escapeQuotes(seat.customer_name)}')">
-          <i class="fa-solid fa-flag-checkered me-1"></i>Finish Service
+          Finish Service
         </button>
       `
       : `
-        <button class="admin-finish-btn mt-3" disabled>
-          <i class="fa-solid fa-check me-1"></i>Available
+        <button class="admin-finish-btn mt-3" disabled style="opacity:0.65;">
+          Available
         </button>
       `;
 
@@ -148,27 +138,26 @@ function renderAdminSeats(chairs) {
       <div class="seat-card-compact ${statusClass}">
         <div class="seat-title-row">
           <div class="seat-name">
-            <i class="fa-solid fa-chair text-secondary"></i>
             Seat ${seat.chair_number}
           </div>
-          <div>${statusBadge}</div>
+          <span class="seat-status-badge ${statusClass}">${statusBadge}</span>
         </div>
 
         <div class="seat-meta-row mt-2">
-          <div class="seat-meta-label">Customer:</div>
-          <div class="seat-meta-val">${customerDisplay}</div>
+          <span class="seat-meta-label">Customer:</span>
+          <span class="seat-meta-val">${customerDisplay}</span>
         </div>
 
         <div class="seat-meta-row">
-          <div class="seat-meta-label">Time:</div>
-          <div class="seat-meta-val">${timeDisplay}</div>
+          <span class="seat-meta-label">Time:</span>
+          <span class="seat-meta-val">${timeDisplay}</span>
         </div>
 
         <div class="seat-meta-row">
-          <div class="seat-meta-label">Status:</div>
-          <div class="seat-meta-val small fw-bold ${isOccupied ? 'text-danger' : 'text-success'}">
-            ${isOccupied ? 'SERVING' : 'READY FOR NEXT CUSTOMER'}
-          </div>
+          <span class="seat-meta-label">Status:</span>
+          <span class="seat-meta-val small fw-bold ${isOccupied ? 'text-danger' : 'text-success'}">
+            ${isOccupied ? 'CURRENTLY SERVING' : 'AVAILABLE'}
+          </span>
         </div>
 
         ${finishBtn}
@@ -243,7 +232,7 @@ async function executeFinishService() {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-check me-1"></i>Complete Service';
+      btn.innerHTML = 'Complete Service';
     }
   }
 }
@@ -305,7 +294,7 @@ async function fetchAdminSlots() {
     console.error('Error fetching admin slots:', err);
     container.innerHTML = `
       <div class="alert alert-danger p-2 small">
-        <i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load time slots.
+        Failed to load time slots.
       </div>
     `;
   }
@@ -318,7 +307,6 @@ function renderAdminSlots(slots) {
   if (!slots || slots.length === 0) {
     container.innerHTML = `
       <div class="text-center py-5 text-muted small">
-        <i class="fa-regular fa-calendar-xmark fs-3 text-secondary mb-2 d-block"></i>
         No available time slots remaining for the selected date.
       </div>
     `;
@@ -333,11 +321,11 @@ function renderAdminSlots(slots) {
 
     let badgePill = '';
     if (assigned === 0) {
-      badgePill = `<span class="slot-badge-pill available-2"><i class="fa-solid fa-circle-check"></i>0 / ${capacity} AVAILABLE</span>`;
+      badgePill = `<span class="slot-badge-pill available-2">0 / ${capacity} AVAILABLE</span>`;
     } else if (assigned < capacity) {
-      badgePill = `<span class="slot-badge-pill available-1"><i class="fa-solid fa-clock"></i>${assigned} / ${capacity} AVAILABLE</span>`;
+      badgePill = `<span class="slot-badge-pill available-1">${assigned} / ${capacity} AVAILABLE</span>`;
     } else {
-      badgePill = `<span class="slot-badge-pill full"><i class="fa-solid fa-lock"></i>${assigned} / ${capacity} FULL</span>`;
+      badgePill = `<span class="slot-badge-pill full">${assigned} / ${capacity} FULL</span>`;
     }
 
     // Booked customers info for this slot
@@ -347,7 +335,6 @@ function renderAdminSlots(slots) {
         <div class="slot-customers-box">
           ${slot.bookedCustomers.map(c => `
             <span class="slot-booking-customer-chip">
-              <i class="fa-solid fa-user-check text-primary"></i>
               <strong>${c.customerName || 'Customer'}</strong>
               <span class="text-muted">(${c.chairNumber ? 'Seat ' + c.chairNumber : (c.tokenNumber || 'Booked')})</span>
             </span>
@@ -366,7 +353,7 @@ function renderAdminSlots(slots) {
       <div class="slot-capacity-card ${isFull ? 'full' : ''} flex-column align-items-stretch">
         <div class="d-flex align-items-center justify-content-between">
           <div class="slot-time-title">
-            <i class="fa-regular fa-clock text-secondary me-1.5"></i>${slot.timeSlot}
+            ${slot.timeSlot}
           </div>
           <div>${badgePill}</div>
         </div>
@@ -379,7 +366,7 @@ function renderAdminSlots(slots) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. RIGHT COLUMN: FIFO WAITING QUEUE
+// 4. RIGHT COLUMN: FIFO WAITING LIST
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function fetchAdminQueue() {
@@ -409,7 +396,7 @@ async function fetchAdminQueue() {
     console.error('Error fetching admin queue:', err);
     container.innerHTML = `
       <div class="alert alert-danger p-2 small">
-        <i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load waiting queue.
+        Failed to load waiting list.
       </div>
     `;
   }
@@ -422,7 +409,6 @@ function renderAdminQueue(list) {
   if (!list || list.length === 0) {
     container.innerHTML = `
       <div class="text-center py-5 text-muted small">
-        <i class="fa-solid fa-circle-check fs-3 text-success mb-2 d-block"></i>
         Queue is currently empty.<br>
         <span class="text-secondary" style="font-size:0.75rem;">Next customer who books a full slot will queue here.</span>
       </div>
@@ -450,7 +436,7 @@ function renderAdminQueue(list) {
         </div>
         <div class="ms-2 flex-shrink-0">
           <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold" style="font-size:0.7rem;">
-            🟡 WAITING
+            WAITING
           </span>
         </div>
       </div>
@@ -477,15 +463,11 @@ function setupAdminSockets() {
 
     adminSocket.onopen = () => {
       console.log('Admin WebSocket connected.');
-      const statusText = document.getElementById('admin-ws-status');
-      if (statusText) statusText.textContent = 'Live Synchronized';
     };
 
     adminSocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('🔄 WebSocket Event (Admin):', data);
-
         if (['chair-update', 'queue-update', 'slot-update', 'appointment-update'].includes(data.event)) {
           refreshAllAdminPanels();
         }
@@ -499,9 +481,6 @@ function setupAdminSockets() {
     };
 
     adminSocket.onclose = () => {
-      console.warn('Admin WebSocket closed. Reconnecting in 3s...');
-      const statusText = document.getElementById('admin-ws-status');
-      if (statusText) statusText.textContent = 'Reconnecting…';
       setTimeout(setupAdminSockets, 3000);
     };
 
@@ -525,9 +504,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dateInput.min = selectedAdminDate;
   }
 
-  // Real-time Clock
+  // Real-time Date
   updateAdminClock();
-  setInterval(updateAdminClock, 1000);
 
   // Initial Data Load
   refreshAllAdminPanels();

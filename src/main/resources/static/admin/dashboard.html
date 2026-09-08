@@ -3,102 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — BarberEase</title>
+  <title>Admin Dashboard - Beauty Salon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+  </style>
 </head>
 <body class="booking-page-root">
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       COMPACT TOP NAVIGATION BAR (52px fixed height)
-  ════════════════════════════════════════════════════════════════ -->
-  <nav class="navbar navbar-expand-lg bg-white border-bottom border-secondary-subtle px-3 py-1.5 flex-shrink-0" style="height: 52px; z-index: 1020;">
+  <!-- ═══ TOP NAVBAR (COMPACT & FIXED 52PX) ═══ -->
+  <nav class="navbar navbar-expand bg-white border-bottom px-3 py-2 flex-shrink-0" style="height: 52px; z-index: 1000;">
     <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
       
-      <!-- Brand & Admin Badge -->
-      <div class="d-flex align-items-center gap-2">
-        <a class="navbar-brand d-flex align-items-center gap-2 m-0 p-0 text-decoration-none" href="/admin/dashboard.html">
-          <div class="rounded d-flex align-items-center justify-content-center" style="width:30px;height:30px;background:#2563eb;color:#fff;">
-            <i class="fa-solid fa-scissors" style="font-size:0.9rem;"></i>
-          </div>
-          <span class="fw-bold tracking-tight text-dark" style="font-size: 1.1rem; letter-spacing: -0.5px;">
-            BARBER<span style="color:#2563eb">EASE</span>
-          </span>
-        </a>
-        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-          ADMIN CONTROL
-        </span>
+      <!-- Brand Logo -->
+      <a class="navbar-brand d-flex align-items-center gap-2 m-0 p-0 text-decoration-none" href="/admin/dashboard.html">
+        <span class="fw-bold fs-6 text-dark tracking-tight">Beauty Salon</span>
+      </a>
+
+      <!-- Center Date -->
+      <div class="d-none d-lg-flex align-items-center gap-2">
+        <span class="text-muted small" id="admin-date-label">Today</span>
       </div>
 
-      <!-- Center Live Synchronized & Realtime Clock -->
-      <div class="d-none d-lg-flex align-items-center gap-3">
-        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
-          <span class="ws-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;"></span>
-          <span id="admin-ws-status">Live Synchronized</span>
-        </span>
-        <div class="text-muted small fw-semibold d-flex align-items-center gap-1.5" style="font-size: 0.8rem;">
-          <i class="fa-regular fa-clock text-primary"></i>
-          <span id="admin-clock-label">--:-- --</span>
-          <span class="text-secondary mx-1">·</span>
-          <span id="admin-date-label">Today</span>
-        </div>
-      </div>
-
-      <!-- Right Action & Admin Profile Controls -->
+      <!-- Right User Controls -->
       <div class="d-flex align-items-center gap-2">
-        <a href="/" class="btn btn-sm btn-outline-secondary py-1 px-2.5 d-none d-md-inline-flex align-items-center gap-1 text-decoration-none" style="font-size: 0.78rem;" target="_blank" title="Open Customer View">
-          <i class="fa-solid fa-eye text-muted"></i> Customer View
-        </a>
-
         <!-- Admin User Badge -->
-        <div class="dropdown">
-          <button class="btn btn-sm btn-light border py-1 px-2.5 d-flex align-items-center gap-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.78rem;">
-            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:22px;height:22px;font-size:0.7rem;">A</div>
-            <span class="fw-semibold text-dark" id="admin-username-display">Administrator</span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" style="font-size:0.82rem; min-width: 170px;">
-            <li><h6 class="dropdown-header text-muted text-uppercase" style="font-size:0.65rem;">System Admin</h6></li>
-            <li><a class="dropdown-item py-1.5" href="/" target="_blank"><i class="fa-solid fa-store me-2 text-primary"></i>Client Booking Screen</a></li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-              <button class="dropdown-item py-1.5 text-danger fw-semibold" onclick="handleLogout()">
-                <i class="fa-solid fa-right-from-bracket me-2"></i>Sign Out
-              </button>
-            </li>
-          </ul>
+        <div class="d-flex align-items-center gap-1.5 px-2 py-1 bg-light border rounded text-dark small" style="font-size: 0.8rem;">
+          <span class="fw-semibold text-truncate" style="max-width: 140px;" id="admin-username-display">Administrator</span>
+          <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Admin</span>
         </div>
+
+        <!-- Customer View Link -->
+        <a href="/customer/dashboard.html" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" title="Customer View" style="font-size: 0.78rem;">
+          Customer View
+        </a>
+
+        <!-- Logout Button -->
+        <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="handleLogout()" title="Sign Out" style="font-size: 0.78rem;">
+          Sign Out
+        </button>
       </div>
 
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       FIXED 3-COLUMN MAIN LAYOUT (STRICT VIEWPORT FIT, NO PAGE SCROLL)
-  ════════════════════════════════════════════════════════════════ -->
+  <!-- ═══ FIXED 3-COLUMN MAIN LAYOUT (ZERO PAGE SCROLL) ═══ -->
   <main class="booking-main-row">
 
-    <!-- ── 1. LEFT SIDE — SERVICE SEATS (EXACTLY 2 SERVICE SEATS) ── -->
+    <!-- ── COLUMN 1: LEFT SIDE — SEATS (2 SEATS) ── -->
     <section class="booking-col booking-col-seats">
       <div class="booking-col-header">
-        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-chair text-primary me-2"></i>SERVICE SEATS</h5>
-        <span class="badge bg-light text-dark border"><span style="color:#10b981;">●</span> 2 Service Seats</span>
+        <h5>SEATS</h5>
+        <span class="badge bg-light text-dark border">2 Service Seats</span>
       </div>
       <div class="booking-col-body" id="admin-seats-container">
         <!-- Dynamically populated by renderAdminSeats() -->
         <div class="text-center py-5 text-muted">
-          <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading service seats…
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading seats…
         </div>
       </div>
     </section>
 
-    <!-- ── 2. CENTER — TIME SLOTS / BOOKINGS ── -->
+    <!-- ── COLUMN 2: CENTER — AVAILABLE TIME SLOTS ── -->
     <section class="booking-col booking-col-slots">
       <div class="booking-col-header">
-        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-calendar-check text-primary me-2"></i>TIME SLOTS / BOOKINGS</h5>
+        <h5>AVAILABLE TIME SLOTS</h5>
         <div class="d-flex align-items-center gap-1">
           <!-- Date Filter Buttons -->
           <div class="slot-date-bar mb-0" style="padding:0;background:transparent;border:none;">
@@ -112,25 +87,22 @@
       <div class="booking-col-body" id="admin-slots-list">
         <!-- Dynamically populated by renderAdminSlots() -->
         <div class="text-center py-5 text-muted">
-          <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading time slots & bookings…
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading available slots…
         </div>
       </div>
     </section>
 
-    <!-- ── 3. RIGHT SIDE — WAITING QUEUE (STRICT FIFO) ── -->
+    <!-- ── COLUMN 3: RIGHT SIDE — WAITING LIST ── -->
     <section class="booking-col booking-col-queue">
       <div class="booking-col-header">
-        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-users text-primary me-2"></i>WAITING QUEUE</h5>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold" style="font-size: 0.72rem;">
-          Strict FIFO
-        </span>
+        <h5>WAITING LIST</h5>
       </div>
       <div class="booking-col-body">
         <!-- Live Waiting Counter Box -->
         <div class="queue-counter-box">
           <div>
-            <div class="text-muted small fw-bold">WAITING QUEUE</div>
-            <div class="small text-muted" style="font-size:0.75rem;">First-In, First-Out Order</div>
+            <div class="text-muted small fw-semibold">WAITING LIST</div>
+            <div class="small text-muted" style="font-size:0.75rem;">First-In, First-Out (FIFO)</div>
           </div>
           <div>
             <span class="text-muted small me-1">Waiting:</span>
@@ -142,7 +114,7 @@
         <div id="admin-waiting-queue-list">
           <!-- Dynamically populated by renderAdminQueue() -->
           <div class="text-center py-4 text-muted small">
-            <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading waiting queue…
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading waiting list…
           </div>
         </div>
       </div>
@@ -158,7 +130,7 @@
       <div class="modal-content border-0 shadow">
         <div class="modal-header bg-danger text-white py-2.5 px-3">
           <h6 class="modal-title fw-bold" id="finishServiceModalLabel">
-            <i class="fa-solid fa-circle-check me-1.5"></i>Finish Service
+            Finish Service
           </h6>
           <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -169,14 +141,13 @@
             <div class="text-primary small fw-semibold" id="finish-seat-name">Seat 1</div>
           </div>
           <p class="text-muted mb-0" style="font-size: 0.78rem;">
-            <i class="fa-solid fa-circle-info text-info me-1"></i>
             This will mark the service <strong>COMPLETED</strong>, free the seat, and <strong>automatically assign the next waiting customer</strong> from the queue.
           </p>
         </div>
         <div class="modal-footer p-2 bg-light d-flex justify-content-end gap-1">
           <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-sm btn-danger fw-bold" id="btn-confirm-finish" onclick="executeFinishService()">
-            <i class="fa-solid fa-check me-1"></i>Complete Service
+            Complete Service
           </button>
         </div>
       </div>

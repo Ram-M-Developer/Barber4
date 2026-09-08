@@ -24,19 +24,11 @@
     <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
       <!-- Brand Logo -->
       <a class="navbar-brand d-flex align-items-center gap-2 m-0 p-0 text-decoration-none" href="/customer/dashboard.html">
-        <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded" style="width: 32px; height: 32px; font-size: 1rem;">
-          <i class="fa-solid fa-scissors"></i>
-        </div>
-        <span class="fw-bold fs-6 text-dark tracking-tight">BarberEase</span>
-        <span class="badge bg-light text-secondary border ms-1 d-none d-md-inline" style="font-size: 0.72rem;">2 Seats · FIFO Queue</span>
+        <span class="fw-bold fs-6 text-dark tracking-tight">Beauty Salon</span>
       </a>
 
-      <!-- Center Status / Live Indicator -->
+      <!-- Center Status / Date -->
       <div class="d-none d-lg-flex align-items-center gap-2">
-        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
-          <span class="ws-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;"></span>
-          <span>Live Synchronized</span>
-        </span>
         <span class="text-muted small" id="current-date-label">Today</span>
       </div>
 
@@ -44,14 +36,13 @@
       <div class="d-flex align-items-center gap-2">
         <!-- User Badge -->
         <div class="d-flex align-items-center gap-1.5 px-2 py-1 bg-light border rounded text-dark small" style="font-size: 0.8rem;">
-          <i class="fa-solid fa-circle-user text-primary"></i>
           <span class="fw-semibold text-truncate" style="max-width: 140px;" id="cust-welcome-name">Customer</span>
           <span class="badge bg-primary ms-1" id="user-role-badge" style="font-size: 0.65rem;">Customer</span>
         </div>
 
         <!-- Admin Portal Link -->
         <a href="/auth/admin-login.html" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" title="Admin Portal" style="font-size: 0.78rem;">
-          <i class="fa-solid fa-shield-halved me-1 text-primary"></i>Admin
+          Admin
         </a>
 
         <!-- Logout Button -->
@@ -68,8 +59,8 @@
     <!-- ── COLUMN 1: LEFT SIDE — SEATS (2 SEATS) ── -->
     <section class="booking-col booking-col-seats">
       <div class="booking-col-header">
-        <h5><i class="fa-solid fa-chair text-primary"></i> SEATS</h5>
-        <span class="badge bg-light text-dark border"><span style="color:#10b981;">●</span> 2 Service Seats</span>
+        <h5>SEATS</h5>
+        <span class="badge bg-light text-dark border">2 Service Seats</span>
       </div>
       <div class="booking-col-body" id="seats-container">
         <!-- Dynamically rendered by renderSeats() -->
@@ -82,7 +73,7 @@
     <!-- ── COLUMN 2: CENTER — AVAILABLE TIME SLOTS ── -->
     <section class="booking-col booking-col-slots">
       <div class="booking-col-header">
-        <h5><i class="fa-solid fa-calendar-check text-primary"></i> AVAILABLE TIME SLOTS</h5>
+        <h5>AVAILABLE TIME SLOTS</h5>
         <div class="d-flex align-items-center gap-1">
           <!-- Date Filter Pills -->
           <div class="slot-date-bar mb-0" style="padding:0;background:transparent;border:none;">
@@ -104,9 +95,9 @@
     <!-- ── COLUMN 3: RIGHT SIDE — WAITING LIST ── -->
     <section class="booking-col booking-col-queue">
       <div class="booking-col-header">
-        <h5><i class="fa-solid fa-users text-primary"></i> WAITING LIST</h5>
+        <h5>WAITING LIST</h5>
         <button class="btn btn-sm btn-primary fw-bold py-1 px-2" onclick="openQueueModal()" style="font-size: 0.75rem;">
-          <i class="fa-solid fa-plus me-1"></i>Join List
+          Join List
         </button>
       </div>
       <div class="booking-col-body">
@@ -144,7 +135,7 @@
       <div class="modal-content border-0 shadow">
         <div class="modal-header border-bottom bg-light">
           <h5 class="modal-title fw-bold text-dark fs-6">
-            <i class="fa-solid fa-calendar-check text-primary me-2"></i>Book Time Slot
+            Book Time Slot
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -170,24 +161,15 @@
               </select>
             </div>
 
-            <!-- Notes -->
-            <div class="mb-3">
-              <label for="slot-notes" class="form-label fw-bold small text-muted">Notes (Optional)</label>
-              <input type="text" class="form-control" id="slot-notes" placeholder="e.g. skin fade, beard styling">
-            </div>
-
             <!-- Payment Method -->
             <div class="mb-3">
               <label class="form-label fw-bold small text-muted">Payment Method</label>
               <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-primary flex-fill slot-pay-btn active" data-pay="cash" onclick="selectSlotPayment(this)">
-                  <i class="fa-solid fa-money-bill-wave me-1"></i>Pay in Shop
+                  Pay in Shop
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary flex-fill slot-pay-btn" data-pay="wallet" onclick="selectSlotPayment(this)">
-                  <i class="fa-solid fa-wallet me-1"></i>Wallet
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary flex-fill slot-pay-btn" data-pay="upi" onclick="selectSlotPayment(this)">
-                  <i class="fa-solid fa-qrcode me-1"></i>UPI / GPay
+                  Wallet
                 </button>
               </div>
               <input type="hidden" id="slot-payment-method" value="cash">
@@ -196,16 +178,15 @@
             <!-- Price Total -->
             <div class="d-flex justify-content-between align-items-center p-2.5 rounded mb-3 bg-light border">
               <span class="text-muted small">Estimated Price:</span>
-              <strong class="text-primary fs-5" id="slot-modal-price">$45.00</strong>
+              <strong class="text-primary fs-5" id="slot-modal-price">&#8377;25.00</strong>
             </div>
 
             <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3" style="font-size:0.78rem;">
-              <i class="fa-solid fa-circle-info"></i>
               <span>Directly assigns to an available seat. If capacity is full, you are queued automatically in FIFO order.</span>
             </div>
 
             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="btn-submit-slot-booking">
-              <i class="fa-solid fa-circle-check me-1"></i>Confirm &amp; Book Slot
+              Confirm &amp; Book Slot
             </button>
           </form>
         </div>
@@ -219,13 +200,13 @@
       <div class="modal-content border-0 shadow">
         <div class="modal-header border-bottom bg-light">
           <h5 class="modal-title fw-bold text-dark fs-6">
-            <i class="fa-solid fa-ticket text-primary me-2"></i>Join Digital Waiting Queue
+            Join Digital Waiting Queue
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
           <div class="p-3 rounded mb-3 bg-light border" style="font-size:0.8rem;">
-            <div class="fw-bold text-dark mb-1"><i class="fa-solid fa-circle-info me-1 text-primary"></i>FIFO Queue Rules</div>
+            <div class="fw-bold text-dark mb-1">FIFO Queue Rules</div>
             <p class="text-muted mb-0">Customers are assigned in strict first-come, first-served order as soon as a seat service is completed.</p>
           </div>
 
@@ -238,7 +219,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold text-white" id="join-queue-submit-btn">
-              <i class="fa-solid fa-ticket me-1"></i>Get Digital Token &amp; Join Queue
+              Get Digital Token &amp; Join Queue
             </button>
           </form>
         </div>
