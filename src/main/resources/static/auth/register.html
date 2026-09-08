@@ -15,7 +15,6 @@
     <!-- Brand -->
     <div class="text-center mb-4">
       <h3 class="fw-bold text-dark mb-1">Beauty Salon</h3>
-      <p class="text-muted small mb-0">Create your customer account in seconds</p>
     </div>
 
     <!-- Step Wizard Indicator -->
@@ -53,7 +52,6 @@
             <label for="email" class="form-label">Email Address <span style="color:#60a5fa">*</span></label>
             <input type="email" class="form-control" id="email" required
               placeholder="name@example.com" autocomplete="email">
-            <div class="mt-1" id="email-status"></div>
           </div>
           <div class="col-md-6 mb-3">
             <label for="phone" class="form-label">Phone Number <span style="color:#60a5fa">*</span></label>
@@ -254,17 +252,6 @@
       }
     }
 
-    // ── Email live check (debounced) ──
-    let emailCheckTimer;
-    document.getElementById('email').addEventListener('input', function() {
-      const status = document.getElementById('email-status');
-      clearTimeout(emailCheckTimer);
-      status.innerHTML = '';
-      if (!this.value.includes('@')) return;
-      emailCheckTimer = setTimeout(async () => {
-        status.innerHTML = '<span class="small text-success">Email looks good</span>';
-      }, 800);
-    });
 
     // ── Handle Register ──
     window.handleRegister = async function(event) {
