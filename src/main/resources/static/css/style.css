@@ -2028,8 +2028,8 @@ html, body {
 .seat-card-compact {
   border: 1.5px solid #e2e8f0;
   border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.85rem;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.4rem;
   background: #ffffff;
   transition: all 0.2s ease;
 }

@@ -52,6 +52,10 @@ public class SecurityConfig {
                 // ── Public READ endpoints (GET only) ──
                 .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/appointments/slots", "/api/appointments/slots/**").permitAll()
+                // Chairs: public GET so the seat grid renders without a token
+                .requestMatchers(HttpMethod.GET, "/api/chairs", "/api/chairs/**").permitAll()
+                // Queue count: public aggregate (no customer names exposed)
+                .requestMatchers(HttpMethod.GET, "/api/queue/count").permitAll()
 
                 // ── Admin-only endpoints (BACKEND enforced) ──
                 // These controllers also have verifyAdmin() internally, providing defense-in-depth

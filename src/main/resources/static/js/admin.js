@@ -188,59 +188,47 @@ function renderSeatCard(seat) {
   let actionBtns = '';
   if (isOccupied) {
     actionBtns = `
-      <div class="d-flex gap-2 mt-3">
-        <button class="admin-finish-btn flex-grow-1" onclick="promptFinishService(${seat.id}, 'Seat ${seat.chair_number}', '${escapeQuotes(seat.customer_name)}')">
-          <i class="fa-solid fa-check me-1"></i>Complete Service
+      <div class="d-flex gap-1 mt-1.5">
+        <button class="admin-finish-btn flex-grow-1 py-1 px-2" style="font-size:0.72rem;" onclick="promptFinishService(${seat.id}, 'Seat ${seat.chair_number}', '${escapeQuotes(seat.customer_name)}')">
+          <i class="fa-solid fa-check me-1"></i>Complete
         </button>
-        <button class="btn btn-sm btn-outline-warning fw-bold border-2" title="Force Free Seat"
+        <button class="btn btn-sm btn-outline-warning fw-bold border-2 py-1 px-2" style="font-size:0.72rem;" title="Force Free Seat"
           onclick="promptForceFreeSeat(${seat.id}, 'Seat ${seat.chair_number}', '${escapeQuotes(seat.customer_name)}')">
-          <i class="fa-solid fa-bolt"></i> Force Free
+          <i class="fa-solid fa-bolt"></i> Free
         </button>
       </div>`;
   } else if (isCleaning) {
     actionBtns = `
-      <button class="btn btn-sm btn-outline-success w-100 mt-3 fw-bold"
+      <button class="btn btn-sm btn-outline-success w-100 mt-1.5 py-1 px-2 fw-bold" style="font-size:0.72rem;"
         onclick="updateSeatStatus(${seat.id}, 'available')">
-        <i class="fa-solid fa-spray-can me-1"></i>Mark Clean / Available
+        <i class="fa-solid fa-spray-can me-1"></i>Mark Available
       </button>`;
   } else if (!isOutOfService) {
     actionBtns = `
-      <div class="d-flex gap-2 mt-3">
-        <button class="btn btn-sm btn-outline-secondary flex-grow-1" disabled style="opacity:0.5;">Available</button>
-        <button class="btn btn-sm btn-outline-secondary" title="Mark out of service"
+      <div class="d-flex gap-1 mt-1.5">
+        <button class="btn btn-sm btn-outline-secondary flex-grow-1 py-1 px-2" disabled style="opacity:0.5;font-size:0.72rem;">Available</button>
+        <button class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.72rem;" title="Mark out of service"
           onclick="updateSeatStatus(${seat.id}, 'out_of_service')">
           <i class="fa-solid fa-ban"></i>
         </button>
       </div>`;
   } else {
     actionBtns = `
-      <button class="btn btn-sm btn-outline-success w-100 mt-3 fw-bold"
+      <button class="btn btn-sm btn-outline-success w-100 mt-1.5 py-1 px-2 fw-bold" style="font-size:0.72rem;"
         onclick="updateSeatStatus(${seat.id}, 'available')">
-        <i class="fa-solid fa-rotate me-1"></i>Restore to Service
+        <i class="fa-solid fa-rotate me-1"></i>Restore Service
       </button>`;
   }
 
   return `
     <div class="seat-card-compact ${statusClass}">
-      <div class="seat-title-row">
-        <div class="seat-name"><i class="fa-solid fa-chair me-1"></i>Seat ${seat.chair_number}</div>
-        <span class="seat-status-badge ${statusClass}">${statusLabel}</span>
+      <div class="seat-title-row mb-1">
+        <div class="seat-name" style="font-size:0.85rem;"><i class="fa-solid fa-chair me-1 text-primary"></i>Seat ${seat.chair_number}</div>
+        <span class="seat-status-badge ${statusClass}" style="font-size:0.65rem;padding:2px 6px;">${statusLabel}</span>
       </div>
-      <div class="seat-meta-row mt-2">
-        <span class="seat-meta-label">Customer:</span>
-        <span class="seat-meta-val">${customerDisplay}</span>
-      </div>
-      <div class="seat-meta-row">
-        <span class="seat-meta-label">Service:</span>
-        <span class="seat-meta-val">${serviceDisplay}</span>
-      </div>
-      <div class="seat-meta-row">
-        <span class="seat-meta-label">Since:</span>
-        <span class="seat-meta-val">${timeDisplay}</span>
-      </div>
-      <div class="seat-meta-row">
-        <span class="seat-meta-label">Status:</span>
-        <span class="seat-meta-val small fw-bold ${statusColor}">${statusLabel}</span>
+      <div class="d-flex justify-content-between align-items-center" style="font-size:0.75rem;">
+        <div><span class="text-muted me-1">Customer:</span>${customerDisplay}</div>
+        <div><span class="text-muted me-1">Service:</span>${serviceDisplay}</div>
       </div>
       ${actionBtns}
     </div>`;

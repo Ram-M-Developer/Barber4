@@ -89,7 +89,7 @@ async function fetchChairs() {
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     const [chairsRes, queueRes] = await Promise.all([
-      fetch('/api/chairs'),
+      fetch('/api/chairs', { headers }),
       fetch('/api/queue', { headers }).catch(() => ({ ok: false }))
     ]);
 
@@ -158,7 +158,9 @@ function renderSeats() {
   const seat2 = chairs.find(c => c.chair_number === 2) || { id: 2, chair_number: 2, name: 'Seat 2', status: 'available' };
 
   // Check user role
-  const userType = localStorage.getItem('barber_user_type') || (currentUser ? currentUser.type : '');
+  let currentUser = null;
+  try { currentUser = JSON.parse(localStorage.getItem('barber_user')); } catch (e) {}
+  const userType = localStorage.getItem('barber_user_type') || (currentUser ? (currentUser.type || currentUser.role) : '');
   const isAdmin = userType === 'admin' || localStorage.getItem('barber_admin_token') != null;
 
   const renderSeatCard = (seat, seatNum) => {
@@ -443,6 +445,7 @@ function renderMyQueueStatus(myQueue) {
     <div class="text-muted text-center" style="font-size:0.71rem;">
       <i class="fa-solid fa-lock me-1"></i>Only you can see your queue status. The admin manages all seats.
     </div>`;
+}
 window.renderMyQueueStatus = renderMyQueueStatus;
 
 async function cancelMyQueueEntry(queueId) {
@@ -1341,7 +1344,6 @@ function setupSockets() {
 
     socket.onopen = () => {
       console.log('WebSocket connected.');
-      setWsConnected(true);
     };
 
     socket.onmessage = (event) => {
@@ -1362,17 +1364,15 @@ function setupSockets() {
       }
     };
 
-    socket.onerror = () => setWsConnected(false);
+    socket.onerror = () => {};
 
     socket.onclose = () => {
       console.warn('WebSocket closed. Polling fallback active.');
-      setWsConnected(false);
       startAjaxPolling();
     };
 
   } catch (err) {
     console.warn('WebSocket init failed, polling fallback.', err);
-    setWsConnected(false);
     startAjaxPolling();
   }
 }
@@ -1388,7 +1388,8 @@ function startAjaxPolling() {
 
 // Initialize Page Data
 document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('barber_user'));
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('barber_user')); } catch(e) {}
   if (user) {
     const welcomeEl = document.getElementById('cust-welcome-name');
     if (welcomeEl) welcomeEl.textContent = user.name || 'Customer';
