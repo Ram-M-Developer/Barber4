@@ -335,9 +335,15 @@
             <div class="fw-bold text-dark" id="awc-chair-name">Waiting Chair W1</div>
           </div>
           <div class="mb-2">
-            <label class="form-label small fw-semibold">Customer ID:</label>
-            <input type="number" class="form-control form-control-sm" id="awc-customer-id" placeholder="Enter customer ID..." min="1">
-            <div class="form-text small text-muted">Enter the customer's ID number from their profile.</div>
+            <label class="form-label small fw-semibold">Select from Queue:</label>
+            <select class="form-select form-select-sm mb-2" id="awc-queue-select">
+              <option value="">— Loading queue… —</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Or enter Customer ID directly:</label>
+            <input type="number" class="form-control form-control-sm" id="awc-customer-id" placeholder="Customer ID…" min="1">
+            <div class="form-text small text-muted">Customer ID is auto-filled when selecting from queue.</div>
           </div>
         </div>
         <div class="modal-footer p-2 bg-light d-flex justify-content-end gap-1">

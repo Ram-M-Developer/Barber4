@@ -114,6 +114,20 @@ public class WaitingChairService {
         return saved;
     }
 
+    /**
+     * Releases any waiting chair occupied by a customer when they move to service or leave.
+     */
+    public void releaseChairForCustomer(Long customerId) {
+        if (customerId == null) return;
+        waitingChairRepository.findByOccupiedByCustomerId(customerId).ifPresent(chair -> {
+            chair.setStatus("vacant");
+            chair.setOccupiedByCustomer(null);
+            chair.setOccupiedAt(null);
+            waitingChairRepository.save(chair);
+            webSocketHandler.broadcast("waiting-chair-update");
+        });
+    }
+
     public long countVacant() {
         return waitingChairRepository.countByStatus("vacant");
     }

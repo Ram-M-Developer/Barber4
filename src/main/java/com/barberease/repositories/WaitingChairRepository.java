@@ -12,5 +12,6 @@ public interface WaitingChairRepository extends JpaRepository<WaitingChair, Long
     List<WaitingChair> findByIsActiveTrueOrderByChairNumberAsc();
     List<WaitingChair> findByStatusAndIsActiveTrueOrderByChairNumberAsc(String status);
     Optional<WaitingChair> findByChairNumber(int chairNumber);
+    Optional<WaitingChair> findByOccupiedByCustomerId(Long customerId);
     long countByStatus(String status);
 }

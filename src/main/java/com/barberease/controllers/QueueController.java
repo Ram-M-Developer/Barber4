@@ -136,6 +136,7 @@ public class QueueController {
             m.put("status", q.getStatus());
             String name = q.getCustomer() != null ? q.getCustomer().getName() : "Customer";
             m.put("customer_name", name);
+            m.put("customer_id", q.getCustomer() != null ? q.getCustomer().getId() : null);
             m.put("service_name", q.getService() != null ? q.getService().getName() : "Haircut");
             m.put("service_id", q.getService() != null ? q.getService().getId() : null);
             m.put("estimated_wait_minutes", q.getEstimatedWaitMinutes());
@@ -200,6 +201,15 @@ public class QueueController {
         data.put("service", status.getService() != null ?
             java.util.Map.of("id", status.getService().getId(), "name", status.getService().getName()) : null);
         data.put("created_at", status.getCreatedAt() != null ? status.getCreatedAt().toString() : null);
+        // Include assigned seat number if the customer has been called to a service seat
+        if (status.getChair() != null) {
+            data.put("assigned_seat_number", status.getChair().getChairNumber());
+            data.put("assigned_seat_name", "Seat " + status.getChair().getChairNumber());
+        } else {
+            data.put("assigned_seat_number", null);
+            data.put("assigned_seat_name", null);
+        }
+
 
         body.put("data", data);
         return ResponseEntity.ok(body);

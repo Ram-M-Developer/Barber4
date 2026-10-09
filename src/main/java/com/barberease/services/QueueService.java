@@ -48,6 +48,9 @@ public class QueueService {
     @Autowired
     private AppointmentService appointmentService;
 
+    @Autowired
+    private WaitingChairService waitingChairService;
+
     public Queue addToQueue(Long customerId, Long serviceId) {
         return addToQueue(customerId, serviceId, null);
     }
@@ -221,6 +224,10 @@ public class QueueService {
         chair.setReservedAt(LocalDateTime.now());
         chairRepository.save(chair);
 
+        if (entry.getCustomer() != null) {
+            waitingChairService.releaseChairForCustomer(entry.getCustomer().getId());
+        }
+
         recalculatePositions();
 
         webSocketHandler.broadcast("chair-update");
@@ -257,6 +264,10 @@ public class QueueService {
         chair.setReservedByCustomer(entry.getCustomer());
         chair.setReservedAt(LocalDateTime.now());
         chairRepository.save(chair);
+
+        if (entry.getCustomer() != null) {
+            waitingChairService.releaseChairForCustomer(entry.getCustomer().getId());
+        }
 
         // Create appointment
         Appointment appointment = new Appointment();
@@ -380,6 +391,10 @@ public class QueueService {
             chair.setReservedAt(null);
             chairRepository.save(chair);
             webSocketHandler.broadcast("chair-update");
+        }
+
+        if (entry.getCustomer() != null) {
+            waitingChairService.releaseChairForCustomer(entry.getCustomer().getId());
         }
 
         // Cancel token

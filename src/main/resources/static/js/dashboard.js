@@ -382,20 +382,41 @@ function renderMyQueueStatus(myQueue) {
     return;
   }
 
-  const statusColor = myQueue.status === 'waiting' ? 'warning' : myQueue.status === 'serving' ? 'success' : 'secondary';
+  const statusColorMap = {
+    waiting: 'warning',
+    called: 'info',
+    serving: 'success',
+    completed: 'secondary',
+    cancelled: 'danger'
+  };
+  const statusColor = statusColorMap[myQueue.status] || 'secondary';
+  const statusTextColor = (myQueue.status === 'waiting' || myQueue.status === 'completed') ? 'text-dark' : 'text-white';
   const statusLabel = (myQueue.status || 'waiting').toUpperCase();
-  const waitMin = myQueue.estimated_wait_minutes > 0 ? `~${myQueue.estimated_wait_minutes} min` : 'You\'re next!';
+  const waitMin = myQueue.estimated_wait_minutes > 0 ? `~${myQueue.estimated_wait_minutes} min` : "You're next!";
   const token = myQueue.token_number || '—';
-  const position = myQueue.position || myQueue.estimated_wait_minutes || '—';
+  const position = myQueue.position || '—';
   const serviceName = myQueue.service ? myQueue.service.name : 'Service';
+  const assignedSeat = myQueue.assigned_seat_number ? `Seat ${myQueue.assigned_seat_number}` : null;
+
+  let seatBanner = '';
+  if (assignedSeat && (myQueue.status === 'called' || myQueue.status === 'serving')) {
+    seatBanner = `
+      <div class="mt-2 p-2 rounded border text-center" style="background:#dcfce7;border-color:#86efac!important;">
+        <div class="fw-bold text-success" style="font-size:1rem;">
+          <i class="fa-solid fa-chair me-1"></i>${assignedSeat} Assigned!
+        </div>
+        <div class="small text-success" style="font-size:0.73rem;">Please proceed to your assigned service seat.</div>
+      </div>`;
+  }
 
   listEl.innerHTML = `
     <div class="p-3 rounded border mb-2" style="background:linear-gradient(135deg,#eff6ff,#fff);border-color:#bfdbfe!important;">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <span class="fw-bold text-primary" style="font-size:0.9rem;"><i class="fa-solid fa-ticket me-1"></i>Your Token: ${token}</span>
-        <span class="badge bg-${statusColor} text-dark fw-bold" style="font-size:0.7rem;">${statusLabel}</span>
+        <span class="badge bg-${statusColor} ${statusTextColor} fw-bold" style="font-size:0.7rem;">${statusLabel}</span>
       </div>
-      <div class="row g-2 text-center">
+      ${seatBanner}
+      <div class="row g-2 text-center mt-1">
         <div class="col-6">
           <div class="p-2 bg-white rounded border">
             <div class="text-muted" style="font-size:0.68rem;">QUEUE POSITION</div>
@@ -422,7 +443,6 @@ function renderMyQueueStatus(myQueue) {
     <div class="text-muted text-center" style="font-size:0.71rem;">
       <i class="fa-solid fa-lock me-1"></i>Only you can see your queue status. The admin manages all seats.
     </div>`;
-}
 window.renderMyQueueStatus = renderMyQueueStatus;
 
 async function cancelMyQueueEntry(queueId) {
@@ -838,6 +858,12 @@ function renderSessionPanel() {
       <div class="text-start p-3 rounded mb-3 small" style="background:#f8fafc;border:1px solid var(--be-border)">
         <div><strong>Status:</strong> <span class="badge" style="background:rgba(37,99,235,0.12);color:#2563eb;border:1px solid rgba(37,99,235,0.3)">${q.status.toUpperCase()}</span></div>
         <div class="mt-1"><strong>Service:</strong> ${q.service?.name || 'Grooming service'}</div>
+        ${q.assigned_seat_name ? `
+          <div class="alert alert-success p-2 mt-2 mb-0 text-center border-2 shadow-sm">
+            <i class="fa-solid fa-scissors me-1 text-success"></i>
+            <strong>Assigned Service Seat:</strong> <span class="badge bg-success fs-6 ms-1">${q.assigned_seat_name}</span>
+          </div>
+        ` : ''}
       </div>
 
       <button class="btn btn-outline-secondary w-100 fw-bold btn-sm" onclick="cancelQueueEntry(${q.id})">

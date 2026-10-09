@@ -123,7 +123,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedWaitingChairs() {
         if (waitingChairRepository.count() == 0) {
             List<WaitingChair> waitingChairs = new ArrayList<>();
-            for (int i = 1; i <= 5; i++) {
+            for (int i = 1; i <= 4; i++) {
                 WaitingChair wc = new WaitingChair();
                 wc.setChairNumber(i);
                 wc.setName("Waiting Chair W" + i);
@@ -132,7 +132,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 waitingChairs.add(wc);
             }
             waitingChairRepository.saveAll(waitingChairs);
-            System.out.println("🪑 5 Waiting Chairs seeded successfully");
+            System.out.println("🪑 4 Waiting Chairs seeded successfully");
         }
     }
 

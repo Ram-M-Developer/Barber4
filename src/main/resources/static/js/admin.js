@@ -90,8 +90,10 @@ function getToken() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function fetchAdminSeats() {
-  const container = document.getElementById('admin-seats-container');
-  if (!container) return;
+  // Check either the new split containers or legacy fallback
+  const seatsContainer = document.getElementById('admin-service-seats-container');
+  const waitingContainer = document.getElementById('admin-waiting-chairs-container');
+  if (!seatsContainer && !waitingContainer) return;
 
   try {
     const [seatsRes, waitingChairsRes] = await Promise.all([
@@ -364,17 +366,44 @@ async function updateSeatStatus(chairId, newStatus) {
 // 3. WAITING CHAIR ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-function promptAssignWaitingChair(chairId, chairName) {
+async function promptAssignWaitingChair(chairId, chairName) {
   pendingWaitingChairId = chairId;
   document.getElementById('awc-chair-name').textContent = `Waiting Chair ${chairName}`;
   document.getElementById('awc-customer-id').value = '';
+
+  // Pre-populate from waiting queue if available
+  const queueSelect = document.getElementById('awc-queue-select');
+  if (queueSelect) {
+    queueSelect.innerHTML = '<option value="">Loading queue…</option>';
+    try {
+      const res = await fetch('/api/queue/waiting', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        if (list.length > 0) {
+          queueSelect.innerHTML = `<option value="">— Select from queue —</option>` +
+            list.map(q => `<option value="${q.id}" data-customer-id="${q.customer_id || ''}">${q.token_number} — ${q.customer_name} (${q.service_name})</option>`).join('');
+          queueSelect.onchange = () => {
+            const selected = queueSelect.options[queueSelect.selectedIndex];
+            const custId = selected.getAttribute('data-customer-id');
+            if (custId) document.getElementById('awc-customer-id').value = custId;
+          };
+        } else {
+          queueSelect.innerHTML = '<option value="">No customers waiting</option>';
+        }
+      }
+    } catch (e) {
+      queueSelect.innerHTML = '<option value="">Failed to load queue</option>';
+    }
+  }
+
   bootstrap.Modal.getOrCreateInstance(document.getElementById('assignWaitingChairModal')).show();
 }
 
 async function executeAssignWaitingChair() {
   const customerId = parseInt(document.getElementById('awc-customer-id').value);
   if (!customerId || isNaN(customerId) || customerId < 1) {
-    showAdminToast('Please enter a valid customer ID.', 'warning');
+    showAdminToast('Please select a customer from the queue or enter a valid customer ID.', 'warning');
     return;
   }
   try {
