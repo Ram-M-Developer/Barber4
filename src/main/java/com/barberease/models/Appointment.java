@@ -39,6 +39,12 @@ public class Appointment {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "interruption_reason", columnDefinition = "TEXT")
+    private String interruptionReason;
+
+    @Column(name = "interrupted_at")
+    private LocalDateTime interruptedAt;
+
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
@@ -133,6 +139,22 @@ public class Appointment {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getInterruptionReason() {
+        return interruptionReason;
+    }
+
+    public void setInterruptionReason(String interruptionReason) {
+        this.interruptionReason = interruptionReason;
+    }
+
+    public LocalDateTime getInterruptedAt() {
+        return interruptedAt;
+    }
+
+    public void setInterruptedAt(LocalDateTime interruptedAt) {
+        this.interruptedAt = interruptedAt;
     }
 
     public LocalDateTime getStartedAt() {

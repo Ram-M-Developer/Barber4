@@ -370,6 +370,7 @@ public class AppointmentService {
                 Map<String, Object> b = new HashMap<>();
                 String customerName = sa.getCustomer() != null ? sa.getCustomer().getName() : "Customer";
                 b.put("customerName", customerName);
+                b.put("customerId", sa.getCustomer() != null ? sa.getCustomer().getId() : null);
                 b.put("appointmentId", sa.getId());
                 b.put("tokenNumber", sa.getTokenNumber());
                 if (sa.getChair() != null) {
@@ -399,16 +400,18 @@ public class AppointmentService {
             Customer customer = customerRepository.findById(customerId)
                     .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-            // 1. Check if customer is already occupying an active seat right now
+            // 1. Check if customer is currently physically occupying an active seat TODAY
+            // (Only block if they have a physical seat now, not future bookings)
             boolean isSeated = chairRepository.findAll().stream()
                     .anyMatch(c -> c.getReservedByCustomer() != null && c.getReservedByCustomer().getId().equals(customerId));
-            if (isSeated) {
+            if (isSeated && date.equals(LocalDate.now())) {
                 throw new IllegalStateException("You are already occupying an active service seat.");
             }
 
-            // 2. Check if customer is already waiting in the digital queue
-            boolean isInQueue = queueRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList("waiting", "called")).isPresent();
-            if (isInQueue) {
+            // 2. Check if customer is already waiting in the digital queue today
+            Optional<com.barberease.models.Queue> existingQueue = queueRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList("waiting", "called"));
+            if (existingQueue.isPresent() && existingQueue.get().getCreatedAt() != null 
+                    && existingQueue.get().getCreatedAt().isAfter(LocalDate.now().atStartOfDay())) {
                 throw new IllegalStateException("You are already in the waiting queue.");
             }
 
@@ -543,10 +546,12 @@ public class AppointmentService {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
 
-            // 1. Mark active appointment on this chair as completed
+            // 1. Mark active appointment on this chair as completed (today's only)
             List<Appointment> activeAppts = appointmentRepository.findByChairId(chairId);
             for (Appointment a : activeAppts) {
-                if ("in_progress".equalsIgnoreCase(a.getStatus()) || "confirmed".equalsIgnoreCase(a.getStatus())) {
+                // Only process today's active records to avoid completing historical appointments
+                if (("in_progress".equalsIgnoreCase(a.getStatus()) || "confirmed".equalsIgnoreCase(a.getStatus()))
+                        && a.getAppointmentDate() != null && a.getAppointmentDate().equals(LocalDate.now())) {
                     a.setStatus("completed");
                     a.setCompletedAt(now);
                     appointmentRepository.save(a);
@@ -601,20 +606,175 @@ public class AppointmentService {
                     queueRepository.save(candidate);
                     continue;
                 }
+
+                // Skip already-finished entries (defensive check against stale status)
+                String cs = candidate.getStatus().toLowerCase();
+                if (cs.equals("cancelled") || cs.equals("completed") || cs.equals("skipped") || cs.equals("no_show") || cs.equals("interrupted") || cs.equals("serving") || cs.equals("called")) {
+                    continue;
+                }
+
                 Long custId = candidate.getCustomer().getId();
 
-                // Validate: Is customer already occupying the other seat?
+                // Validate: Is customer already occupying ANY seat right now?
                 boolean alreadySeated = chairRepository.findAll().stream()
-                        .anyMatch(c -> !c.getId().equals(chairId) && c.getReservedByCustomer() != null && custId.equals(c.getReservedByCustomer().getId()));
+                        .anyMatch(c -> c.getReservedByCustomer() != null && custId.equals(c.getReservedByCustomer().getId()));
                 if (alreadySeated) {
+                    // Customer somehow already seated — complete their queue entry
                     candidate.setStatus("completed");
                     candidate.setCompletedAt(now);
                     queueRepository.save(candidate);
                     continue;
                 }
 
-                // Validate: Check if customer has already been completed or cancelled
-                if ("cancelled".equalsIgnoreCase(candidate.getStatus()) || "completed".equalsIgnoreCase(candidate.getStatus())) {
+                eligibleCandidate = candidate;
+                break;
+            }
+
+            if (eligibleCandidate != null) {
+                // Assign that eligible customer to the freed seat
+                eligibleCandidate.setStatus("serving");
+                eligibleCandidate.setChair(savedChair);
+                eligibleCandidate.setServedAt(now);
+                queueRepository.save(eligibleCandidate);
+
+                savedChair.setStatus("occupied");
+                savedChair.setReservedByCustomer(eligibleCandidate.getCustomer());
+                savedChair.setReservedAt(now);
+                chairRepository.save(savedChair);
+
+                // Create or update in-progress appointment for this customer
+                List<Appointment> custAppts = appointmentRepository.findByCustomerIdOrderByAppointmentDateDescCreatedAtDesc(eligibleCandidate.getCustomer().getId());
+                Appointment activeAppt = null;
+                for (Appointment a : custAppts) {
+                    if (("pending".equalsIgnoreCase(a.getStatus()) || "confirmed".equalsIgnoreCase(a.getStatus()))
+                            && (a.getAppointmentDate() == null || a.getAppointmentDate().equals(LocalDate.now()))) {
+                        activeAppt = a;
+                        break;
+                    }
+                }
+
+                if (activeAppt != null) {
+                    activeAppt.setChair(savedChair);
+                    activeAppt.setStatus("in_progress");
+                    activeAppt.setStartedAt(now);
+                    appointmentRepository.save(activeAppt);
+                } else {
+                    Appointment nextAppt = new Appointment();
+                    nextAppt.setCustomer(eligibleCandidate.getCustomer());
+                    nextAppt.setService(eligibleCandidate.getService());
+                    nextAppt.setChair(savedChair);
+                    nextAppt.setTokenNumber(eligibleCandidate.getTokenNumber());
+                    nextAppt.setAppointmentDate(LocalDate.now());
+                    String timeStr = LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm a"));
+                    nextAppt.setTimeSlot(timeStr);
+                    nextAppt.setStatus("in_progress");
+                    nextAppt.setStartedAt(now);
+                    appointmentRepository.save(nextAppt);
+                }
+
+                if (queueService != null) {
+                    queueService.recalculatePositions();
+                }
+            } else {
+                if (queueService != null) {
+                    queueService.recalculatePositions();
+                }
+            }
+
+            webSocketHandler.broadcast("slot-update");
+            webSocketHandler.broadcast("chair-update");
+            webSocketHandler.broadcast("queue-update");
+            webSocketHandler.broadcast("appointment-update");
+
+            return savedChair;
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public Chair forceFreeSeat(Long chairId, String reason) {
+        synchronized (BOOKING_LOCK) {
+            Chair chair = chairRepository.findById(chairId)
+                    .orElseThrow(() -> new IllegalArgumentException("Seat not found"));
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+
+            // 1. Mark active appointment on this chair as interrupted (today's only)
+            List<Appointment> activeAppts = appointmentRepository.findByChairId(chairId);
+            for (Appointment a : activeAppts) {
+                // Only process today's active records to avoid corrupting historical data
+                if (("in_progress".equalsIgnoreCase(a.getStatus()) || "confirmed".equalsIgnoreCase(a.getStatus()))
+                        && a.getAppointmentDate() != null && a.getAppointmentDate().equals(LocalDate.now())) {
+                    a.setStatus("interrupted");
+                    a.setInterruptedAt(now);
+                    a.setInterruptionReason(reason);
+                    appointmentRepository.save(a);
+
+                    if (a.getTokenNumber() != null) {
+                        tokenRepository.findByTokenNumber(a.getTokenNumber()).forEach(t -> {
+                            t.setStatus("interrupted");
+                            tokenRepository.save(t);
+                        });
+                    }
+                }
+            }
+
+            // 2. Mark active queue entry assigned to this chair as interrupted
+            List<Queue> servingQueues = queueRepository.findByChairIdAndStatusInAndCreatedAtAfterOrderByPositionAsc(
+                    chairId, Arrays.asList("called", "serving"), startOfDay);
+            for (Queue q : servingQueues) {
+                q.setStatus("interrupted");
+                q.setCompletedAt(now);
+                queueRepository.save(q);
+            }
+
+            if (chair.getReservedByCustomer() != null) {
+                Long prevCustId = chair.getReservedByCustomer().getId();
+                List<Queue> prevCustQueues = queueRepository.findAllByCustomerIdAndStatusIn(
+                        prevCustId, Arrays.asList("waiting", "called", "serving"));
+                for (Queue q : prevCustQueues) {
+                    q.setStatus("interrupted");
+                    q.setCompletedAt(now);
+                    queueRepository.save(q);
+                }
+            }
+
+            // 3. Free the assigned seat in database
+            chair.setStatus("available");
+            chair.setReservedByCustomer(null);
+            chair.setReservedAt(null);
+            Chair savedChair = chairRepository.save(chair);
+
+            // 4. Check waiting queue: strictly find first ELIGIBLE customer from FIFO queue
+            List<Queue> waitingList = queueRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtAsc("waiting", startOfDay);
+            if (waitingList.isEmpty()) {
+                waitingList = queueRepository.findByStatusOrderByCreatedAtAsc("waiting");
+            }
+
+            Queue eligibleCandidate = null;
+            for (Queue candidate : waitingList) {
+                if (candidate.getCustomer() == null) {
+                    candidate.setStatus("cancelled");
+                    candidate.setCompletedAt(now);
+                    queueRepository.save(candidate);
+                    continue;
+                }
+
+                // Skip already-finished entries
+                String cs = candidate.getStatus().toLowerCase();
+                if (cs.equals("cancelled") || cs.equals("completed") || cs.equals("skipped") || cs.equals("no_show") || cs.equals("interrupted") || cs.equals("serving") || cs.equals("called")) {
+                    continue;
+                }
+
+                Long custId = candidate.getCustomer().getId();
+
+                // Validate: Is customer already occupying ANY seat right now?
+                boolean alreadySeated = chairRepository.findAll().stream()
+                        .anyMatch(c -> c.getReservedByCustomer() != null && custId.equals(c.getReservedByCustomer().getId()));
+                if (alreadySeated) {
+                    candidate.setStatus("completed");
+                    candidate.setCompletedAt(now);
+                    queueRepository.save(candidate);
                     continue;
                 }
 

@@ -1,4 +1,5 @@
 const http = require('http');
+const PORT = process.env.PORT || 6080;
 
 function request(options, data) {
   return new Promise((resolve, reject) => {
@@ -26,7 +27,7 @@ async function run() {
   console.log('\n[TEST 1] Non-admin / unauthenticated access to /api/chairs/1/complete-service');
   const unauthRes = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/chairs/1/complete-service',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
@@ -39,7 +40,7 @@ async function run() {
   console.log('\n[TEST 2] Admin Login');
   const adminLogin = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/auth/admin/login',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
@@ -55,7 +56,7 @@ async function run() {
     const email = `testcust${i}_${timestamp}@example.com`;
     const regRes = await request({
       hostname: 'localhost',
-      port: 3000,
+      port: PORT,
       path: '/api/auth/register',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
@@ -78,7 +79,7 @@ async function run() {
   const today = new Date().toISOString().split('T')[0];
   const book1 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/appointments/book-slot',
     method: 'POST',
     headers: {
@@ -96,7 +97,7 @@ async function run() {
   console.log('\n[TEST 4] Customer 2 books -> Auto-assigned Seat 2');
   const book2 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/appointments/book-slot',
     method: 'POST',
     headers: {
@@ -113,7 +114,7 @@ async function run() {
   // Check chairs state
   const chairsRes = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/chairs',
     method: 'GET'
   });
@@ -123,7 +124,7 @@ async function run() {
   console.log('\n[TEST 5] Customer 3 books -> Enters FIFO Waiting Queue at #1');
   const book3 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/appointments/book-slot',
     method: 'POST',
     headers: {
@@ -141,7 +142,7 @@ async function run() {
   console.log('\n[TEST 6] Customer 4 books -> Enters FIFO Waiting Queue at #2');
   const book4 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/appointments/book-slot',
     method: 'POST',
     headers: {
@@ -157,7 +158,7 @@ async function run() {
   // Verify FIFO Waiting Queue
   const queueRes1 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/queue/waiting',
     method: 'GET'
   });
@@ -172,7 +173,7 @@ async function run() {
   console.log('\n[TEST 7] Customer tries calling /api/chairs/1/complete-service with customer JWT');
   const custCallRes = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/chairs/1/complete-service',
     method: 'POST',
     headers: {
@@ -188,7 +189,7 @@ async function run() {
   console.log('\n[TEST 8] ADMIN clicks Finish Service on Seat 1!');
   const finishSeat1 = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/chairs/1/complete-service',
     method: 'POST',
     headers: {
@@ -203,7 +204,7 @@ async function run() {
   console.log('\n[TEST 9] Verifying Automatic Handover on Seat 1:');
   const chairsAfter = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/chairs',
     method: 'GET'
   });
@@ -211,7 +212,7 @@ async function run() {
 
   const queueAfter = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: '/api/queue/waiting',
     method: 'GET'
   });
@@ -231,7 +232,7 @@ async function run() {
   console.log('\n[TEST 10] Checking Detailed Slots:');
   const slotsRes = await request({
     hostname: 'localhost',
-    port: 3000,
+    port: PORT,
     path: `/api/appointments/slots/detailed?date=${today}`,
     method: 'GET',
     headers: { 'Authorization': `Bearer ${adminToken}` }

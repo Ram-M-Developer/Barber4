@@ -92,32 +92,31 @@
       </div>
     </section>
 
-    <!-- ── COLUMN 3: RIGHT SIDE — WAITING LIST ── -->
+    <!-- ── COLUMN 3: RIGHT SIDE — MY QUEUE STATUS ── -->
     <section class="booking-col booking-col-queue">
       <div class="booking-col-header">
-        <h5>WAITING LIST</h5>
+        <h5>MY QUEUE STATUS</h5>
         <button class="btn btn-sm btn-primary fw-bold py-1 px-2" onclick="openQueueModal()" style="font-size: 0.75rem;">
-          Join List
+          Join Queue
         </button>
       </div>
       <div class="booking-col-body">
-        <!-- Live Waiting Counter Box -->
+        <!-- Queue Status Box (aggregate count only — no customer names exposed) -->
         <div class="queue-counter-box">
           <div>
-            <div class="text-muted small fw-semibold">WAITING LIST</div>
-            <div class="small text-muted" style="font-size:0.75rem;">First-In, First-Out (FIFO)</div>
+            <div class="text-muted small fw-semibold">QUEUE STATUS</div>
+            <div class="small text-muted" style="font-size:0.75rem;">Managed by Admin (FIFO)</div>
           </div>
           <div>
-            <span class="text-muted small me-1">Waiting:</span>
+            <span class="text-muted small me-1">Total Waiting:</span>
             <span class="queue-counter-number" id="waiting-queue-count">0</span>
           </div>
         </div>
 
-        <!-- FIFO Queue List -->
+        <!-- My Queue Status (only own data, rendered by renderMyQueueStatus()) -->
         <div id="waiting-queue-list">
-          <!-- Dynamically rendered by renderWaitingQueue() -->
           <div class="text-center py-4 text-muted small">
-            <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading waiting list…
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading your status…
           </div>
         </div>
       </div>
@@ -212,8 +211,8 @@
 
           <form onsubmit="handleJoinQueueSubmit(event)">
             <div class="mb-3">
-              <label for="queue-service-select" class="form-label fw-bold small text-muted">Select Service <span class="text-danger">*</span></label>
-              <select class="form-select" id="queue-service-select" required>
+              <label for="queue-service" class="form-label fw-bold small text-muted">Select Service <span class="text-danger">*</span></label>
+              <select class="form-select" id="queue-service" required>
                 <!-- Populated by JS -->
               </select>
             </div>

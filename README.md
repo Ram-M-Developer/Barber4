@@ -165,7 +165,7 @@ For production environment:
 ```bash
 npm start
 ```
-Your server will start on [http://localhost:3000](http://localhost:3000).
+Your server will start on [http://localhost:6080](http://localhost:6080).
 
 ---
 
@@ -187,22 +187,22 @@ Verify your installation works correctly by walking through these test cases:
 - Run `npm run db:seed` and verify MySQL tables `admins`, `customers`, `services`, `chairs`, `appointments`, `queues`, and `tokens` are populated.
 
 ### Case 2: Customer Signup & Direct Booking
-1. Open `http://localhost:3000/auth/register.html` and register a new account.
+1. Open `http://localhost:6080/auth/register.html` and register a new account.
 2. After redirection, click on an available chair (🟢) on the live map.
 3. Confirm the reservation countdown timer (5:00 minutes) starts.
 4. Select a service, date, time slot, and click **Confirm Appointment**.
 5. Verify a confirmation token number is issued and details appear in the right-side summary.
 
 ### Case 3: Joining Queue
-1. Log in as admin at `http://localhost:3000/auth/admin-login.html`. Select the **Chairs** tab and change all available chairs to **Maintenance** status.
+1. Log in as admin at `http://localhost:6080/auth/admin-login.html`. Select the **Chairs** tab and change all available chairs to **Maintenance** status.
 2. Refresh the customer dashboard. Verify it displays "All chairs are occupied" and shows a **Join Digital Queue** button.
 3. Click the button, select a service, and confirm.
 4. Verify you receive a queue token (e.g., `T001`) with position `1`.
 
 ### Case 4: Real-Time Sockets Verification
 1. Open two browser windows side-by-side:
-   - Window A: Customer Dashboard (`http://localhost:3000/customer/dashboard.html`)
-   - Window B: Admin Control Center (`http://localhost:3000/admin/dashboard.html`)
+   - Window A: Customer Dashboard (`http://localhost:6080/customer/dashboard.html`)
+   - Window B: Admin Control Center (`http://localhost:6080/admin/dashboard.html`)
 2. In Window A, click an available chair to reserve it.
 3. Verify that the chair immediately turns Yellow (Reserved) in the Admin Control Grid (Window B) without a page refresh.
 4. In Window B (Admin), click **Complete** on an active appointment.

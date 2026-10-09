@@ -113,12 +113,39 @@ public class AppointmentController {
         return null;
     }
 
+    private boolean isAdminCaller() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) return false;
+        UserPrincipal p = (UserPrincipal) auth.getPrincipal();
+        return "admin".equalsIgnoreCase(p.getType()) || "admin".equalsIgnoreCase(p.getRole());
+    }
+
     @GetMapping("/slots/detailed")
     public ResponseEntity<Map<String, Object>> getDetailedSlots(
             @RequestParam(name = "date", required = false) String dateStr) {
         LocalDate date = (dateStr != null && !dateStr.isEmpty()) ? LocalDate.parse(dateStr) : LocalDate.now();
         Long customerId = getOptionalAuthenticatedCustomerId();
+        boolean isAdmin = isAdminCaller();
+
         List<Map<String, Object>> slots = appointmentService.getDetailedSlots(date, customerId);
+
+        // For non-admin callers: strip other customers' names from bookedCustomers
+        if (!isAdmin) {
+            for (Map<String, Object> slot : slots) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> bookedCustomers = (List<Map<String, Object>>) slot.get("bookedCustomers");
+                if (bookedCustomers != null) {
+                    for (Map<String, Object> customer : bookedCustomers) {
+                        // Only preserve name if it's the current customer's booking
+                        Object cId = customer.get("customerId");
+                        boolean isOwn = customerId != null && cId != null && customerId.toString().equals(cId.toString());
+                        if (!isOwn) {
+                            customer.put("customerName", "Customer"); // anonymise
+                        }
+                    }
+                }
+            }
+        }
 
         Map<String, Object> body = new HashMap<>();
         body.put("success", true);

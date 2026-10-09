@@ -2045,6 +2045,19 @@ html, body {
   border-color: #f59e0b;
   background: #fffbeb;
 }
+.seat-card-compact.reserved {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+.seat-card-compact.cleaning {
+  border-color: #f59e0b;
+  background: #fefce8;
+}
+.seat-card-compact.out-of-service {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  opacity: 0.8;
+}
 
 .seat-title-row {
   display: flex;
@@ -2082,6 +2095,21 @@ html, body {
   background: #fef3c7;
   color: #b45309;
   border: 1px solid #fcd34d;
+}
+.seat-status-badge.reserved {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+.seat-status-badge.cleaning {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+.seat-status-badge.out-of-service {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
 .seat-meta-row {

@@ -3,9 +3,11 @@ package com.barberease.config;
 import com.barberease.models.Admin;
 import com.barberease.models.Chair;
 import com.barberease.models.Service;
+import com.barberease.models.WaitingChair;
 import com.barberease.repositories.AdminRepository;
 import com.barberease.repositories.ChairRepository;
 import com.barberease.repositories.ServiceRepository;
+import com.barberease.repositories.WaitingChairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +30,9 @@ public class DatabaseSeeder implements CommandLineRunner {
     private ChairRepository chairRepository;
 
     @Autowired
+    private WaitingChairRepository waitingChairRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -35,6 +40,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         seedAdmin();
         seedServices();
         seedChairs();
+        seedWaitingChairs();
     }
 
     private void seedAdmin() {
@@ -111,6 +117,22 @@ public class DatabaseSeeder implements CommandLineRunner {
             }
             chairRepository.saveAll(allChairs);
             System.out.println("💺 Configured exactly 2 Main Service Chairs (Chairs 1 & 2 active)");
+        }
+    }
+
+    private void seedWaitingChairs() {
+        if (waitingChairRepository.count() == 0) {
+            List<WaitingChair> waitingChairs = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                WaitingChair wc = new WaitingChair();
+                wc.setChairNumber(i);
+                wc.setName("Waiting Chair W" + i);
+                wc.setStatus("vacant");
+                wc.setActive(true);
+                waitingChairs.add(wc);
+            }
+            waitingChairRepository.saveAll(waitingChairs);
+            System.out.println("🪑 5 Waiting Chairs seeded successfully");
         }
     }
 

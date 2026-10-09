@@ -53,8 +53,11 @@ async function fetchServices() {
 
 // Populate service options in forms
 function populateServiceDropdowns() {
+  // Support both the old IDs and the new IDs found in index.html & customer/dashboard.html
   const bookingSelect = document.getElementById('booking-service');
   const queueSelect = document.getElementById('queue-service');
+  const slotSelectSelect = document.getElementById('slot-service-select');
+  const queueSelectSelect = document.getElementById('queue-service-select');
 
   const optionsHTML = services.map(s => `
     <option value="${s.id}" data-price="${s.price}" data-duration="${s.duration_minutes}">
@@ -68,6 +71,12 @@ function populateServiceDropdowns() {
   }
   if (queueSelect) {
     queueSelect.innerHTML = optionsHTML;
+  }
+  if (slotSelectSelect) {
+    slotSelectSelect.innerHTML = optionsHTML;
+  }
+  if (queueSelectSelect) {
+    queueSelectSelect.innerHTML = optionsHTML;
   }
 }
 
@@ -324,56 +333,115 @@ function renderTimeSlots() {
   }).join('');
 }
 
-// 3. RIGHT: Fetch & Render FIFO Waiting Queue
+// 3. RIGHT: Fetch waiting count + current customer's own status (privacy-safe)
 async function fetchWaitingQueue() {
   try {
-    const res = await fetch('/api/queue/waiting');
-    const data = await res.json();
-    if (res.ok && data.data) {
-      currentWaitingQueue = data.data;
-      renderWaitingQueue();
+    const token = localStorage.getItem('barber_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    // Only fetch the aggregate count — no other customers' names exposed
+    const countRes = await fetch('/api/queue/count', { headers });
+    if (countRes.ok) {
+      const countData = await countRes.json();
+      const countEl = document.getElementById('waiting-queue-count');
+      if (countEl) countEl.textContent = countData.count || 0;
     }
+
+    // Fetch only THIS customer's own queue status
+    if (token) {
+      const myRes = await fetch('/api/queue/my-status', { headers });
+      if (myRes.ok) {
+        const myData = await myRes.json();
+        renderMyQueueStatus(myData.data);
+        return;
+      }
+    }
+    renderMyQueueStatus(null);
   } catch (err) {
-    console.error('Error fetching waiting queue:', err);
+    console.error('Error fetching queue status:', err);
+    renderMyQueueStatus(null);
   }
 }
 window.fetchWaitingQueue = fetchWaitingQueue;
 window.fetchWaitingList = fetchWaitingQueue;
 
-function renderWaitingQueue() {
-  const countEl = document.getElementById('waiting-queue-count');
+/**
+ * Render the customer's OWN queue status card.
+ * Does NOT show other customers' names — privacy protected.
+ */
+function renderMyQueueStatus(myQueue) {
   const listEl = document.getElementById('waiting-queue-list');
-  const count = currentWaitingQueue.length;
-  if (countEl) countEl.textContent = count;
   if (!listEl) return;
 
-  if (count === 0) {
+  if (!myQueue || !myQueue.id) {
     listEl.innerHTML = `
       <div class="text-center py-4 text-muted small bg-light rounded border p-3">
-        <div class="fw-bold text-dark fs-6 mb-1">No customers waiting</div>
-        <div class="text-muted" style="font-size:0.75rem;">New bookings receive direct seat allocation.</div>
-      </div>
-    `;
+        <div class="fw-bold text-dark fs-6 mb-1">No active queue entry</div>
+        <div class="text-muted" style="font-size:0.75rem;">Book a time slot or join the waiting list to see your queue position here.</div>
+      </div>`;
     return;
   }
 
-  listEl.innerHTML = currentWaitingQueue.map((q, idx) => {
-    const custName = q.customer_name || (q.customer ? q.customer.name : 'Customer');
-    const tokNum = q.token_number || ('Q-' + (idx + 1));
-    return `
-      <div class="queue-list-entry">
-        <div class="d-flex align-items-center min-w-0">
-          <div class="queue-rank-badge">${idx + 1}</div>
-          <div class="text-truncate">
-            <div class="fw-bold text-dark text-truncate" style="font-size:0.84rem;">${idx + 1}. ${custName}</div>
-            <div class="text-muted" style="font-size:0.72rem;">Token: ${tokNum}</div>
+  const statusColor = myQueue.status === 'waiting' ? 'warning' : myQueue.status === 'serving' ? 'success' : 'secondary';
+  const statusLabel = (myQueue.status || 'waiting').toUpperCase();
+  const waitMin = myQueue.estimated_wait_minutes > 0 ? `~${myQueue.estimated_wait_minutes} min` : 'You\'re next!';
+  const token = myQueue.token_number || '—';
+  const position = myQueue.position || myQueue.estimated_wait_minutes || '—';
+  const serviceName = myQueue.service ? myQueue.service.name : 'Service';
+
+  listEl.innerHTML = `
+    <div class="p-3 rounded border mb-2" style="background:linear-gradient(135deg,#eff6ff,#fff);border-color:#bfdbfe!important;">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="fw-bold text-primary" style="font-size:0.9rem;"><i class="fa-solid fa-ticket me-1"></i>Your Token: ${token}</span>
+        <span class="badge bg-${statusColor} text-dark fw-bold" style="font-size:0.7rem;">${statusLabel}</span>
+      </div>
+      <div class="row g-2 text-center">
+        <div class="col-6">
+          <div class="p-2 bg-white rounded border">
+            <div class="text-muted" style="font-size:0.68rem;">QUEUE POSITION</div>
+            <div class="fw-bold text-dark fs-5">${position}</div>
           </div>
         </div>
-        <span class="badge bg-warning text-dark" style="font-size:0.65rem;">Waiting</span>
+        <div class="col-6">
+          <div class="p-2 bg-white rounded border">
+            <div class="text-muted" style="font-size:0.68rem;">EST. WAIT</div>
+            <div class="fw-bold text-primary" style="font-size:0.9rem;">${waitMin}</div>
+          </div>
+        </div>
       </div>
-    `;
-  }).join('');
+      <div class="mt-2 text-muted text-center" style="font-size:0.73rem;">
+        <i class="fa-solid fa-scissors me-1"></i>${serviceName}
+      </div>
+      <div class="mt-2 text-center">
+        <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size:0.7rem;"
+          onclick="cancelMyQueueEntry(${myQueue.id})">
+          <i class="fa-solid fa-xmark me-1"></i>Cancel My Queue Entry
+        </button>
+      </div>
+    </div>
+    <div class="text-muted text-center" style="font-size:0.71rem;">
+      <i class="fa-solid fa-lock me-1"></i>Only you can see your queue status. The admin manages all seats.
+    </div>`;
 }
+window.renderMyQueueStatus = renderMyQueueStatus;
+
+async function cancelMyQueueEntry(queueId) {
+  if (!confirm('Cancel your queue entry? You will lose your current queue position.')) return;
+  const token = localStorage.getItem('barber_token');
+  try {
+    const res = await fetch(`/api/queue/${queueId}/cancel`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to cancel queue entry');
+    showToast('Queue entry cancelled.', 'success');
+    fetchWaitingQueue();
+  } catch (err) {
+    showToast(err.message || 'Error cancelling queue entry', 'danger');
+  }
+}
+window.cancelMyQueueEntry = cancelMyQueueEntry;
 
 // Date Filter Helpers
 function selectDateFilter(type) {
@@ -542,7 +610,7 @@ window.handleCompleteSeat = handleCompleteSeat;
 
 // Open Join Waiting Queue Modal
 function openQueueModal() {
-  const sel = document.getElementById('queue-service-select');
+  const sel = document.getElementById('queue-service-select') || document.getElementById('queue-service');
   if (sel) {
     if (services && services.length > 0) {
       sel.innerHTML = services.map(s => `
@@ -566,7 +634,7 @@ async function handleJoinQueueSubmit(event) {
     return;
   }
 
-  const srvSelect = document.getElementById('queue-service-select');
+  const srvSelect = document.getElementById('queue-service-select') || document.getElementById('queue-service');
   const serviceId = srvSelect ? srvSelect.value : 1;
   const btn = document.getElementById('join-queue-submit-btn');
   btn.disabled = true;

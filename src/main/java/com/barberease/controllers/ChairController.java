@@ -1,12 +1,16 @@
 package com.barberease.controllers;
 
+import com.barberease.models.AuditLog;
 import com.barberease.models.Chair;
+import com.barberease.repositories.AdminRepository;
+import com.barberease.repositories.AuditLogRepository;
 import com.barberease.security.UserPrincipal;
 import com.barberease.services.ChairService;
 import com.barberease.websocket.BarberWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +35,31 @@ public class ChairController {
     @Autowired
     private BarberWebSocketHandler webSocketHandler;
 
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    private void auditLog(Long adminId, String action, String entityType, Long entityId,
+                          String prevState, String newState, String reason) {
+        try {
+            AuditLog log = new AuditLog();
+            if (adminId != null) {
+                adminRepository.findById(adminId).ifPresent(log::setAdmin);
+            }
+            log.setAction(action);
+            log.setEntityType(entityType);
+            log.setEntityId(entityId);
+            log.setPreviousState(prevState);
+            log.setNewState(newState);
+            log.setReason(reason);
+            auditLogRepository.save(log);
+        } catch (Exception e) {
+            System.err.println("Audit log save failed: " + e.getMessage());
+        }
+    }
+
     private Long getAuthenticatedCustomerId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
@@ -49,9 +78,12 @@ public class ChairController {
             map.put("id", chair.getId());
             map.put("chair_number", chair.getChairNumber());
             map.put("name", "Seat " + chair.getChairNumber());
-            String customerName = "---";
-            String timeSlot = "---";
+
+            String customerName = null;
+            String timeSlot = null;
+            String serviceName = null;
             Long appointmentId = null;
+            Long customerId = null;
 
             List<com.barberease.models.Appointment> appts = appointmentRepository.findByChairId(chair.getId());
             for (com.barberease.models.Appointment a : appts) {
@@ -59,33 +91,41 @@ public class ChairController {
                         && a.getAppointmentDate() != null && a.getAppointmentDate().equals(java.time.LocalDate.now())) {
                     if (a.getCustomer() != null) {
                         customerName = a.getCustomer().getName();
+                        customerId = a.getCustomer().getId();
                     }
                     if (a.getTimeSlot() != null) {
                         timeSlot = a.getTimeSlot();
+                    }
+                    if (a.getService() != null) {
+                        serviceName = a.getService().getName();
                     }
                     appointmentId = a.getId();
                     break;
                 }
             }
 
-            if ("---".equals(customerName) && chair.getReservedByCustomer() != null) {
+            // Fallback to reserved_by_customer only if no active appointment found
+            if (customerName == null && chair.getReservedByCustomer() != null) {
                 customerName = chair.getReservedByCustomer().getName();
+                customerId = chair.getReservedByCustomer().getId();
                 if (chair.getReservedAt() != null) {
                     timeSlot = chair.getReservedAt().format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"));
                 }
             }
 
             String status = chair.getStatus();
-            if (!"---".equals(customerName) && ("available".equalsIgnoreCase(status) || "reserved".equalsIgnoreCase(status))) {
+            if (customerName != null && ("available".equalsIgnoreCase(status) || "reserved".equalsIgnoreCase(status))) {
                 status = "occupied";
             }
 
             map.put("status", status);
             map.put("is_active", chair.isActive());
-            map.put("customer_name", customerName);
-            map.put("time", timeSlot);
+            map.put("customer_name", customerName != null ? customerName : "---");
+            map.put("customer_id", customerId);
+            map.put("service_name", serviceName != null ? serviceName : "---");
+            map.put("time", timeSlot != null ? timeSlot : "---");
             map.put("appointment_id", appointmentId);
-            map.put("reserved_by_customer", chair.getReservedByCustomer());
+            // NOTE: Do NOT expose reserved_by_customer object (contains sensitive data)
             enriched.add(map);
         }
 
@@ -190,11 +230,34 @@ public class ChairController {
     @PostMapping("/{id}/complete-service")
     public ResponseEntity<Map<String, Object>> completeService(@PathVariable Long id) {
         verifyAdmin();
+        UserPrincipal admin = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Chair chair = appointmentService.completeSeatService(id);
+
+        auditLog(admin.getId(), "COMPLETE_SEAT_SERVICE", "Chair", id, "occupied", "available",
+                "Service completed by admin");
 
         Map<String, Object> body = new HashMap<>();
         body.put("success", true);
         body.put("message", "Seat service completed and next customer seated");
+        body.put("data", chair);
+        return ResponseEntity.ok(body);
+    }
+
+    @PostMapping("/{id}/force-free")
+    public ResponseEntity<Map<String, Object>> forceFreeSeat(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        verifyAdmin();
+        UserPrincipal admin = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String reason = request.get("reason");
+        if (reason == null || reason.trim().isEmpty()) {
+            reason = "Force freed by admin";
+        }
+        Chair chair = appointmentService.forceFreeSeat(id, reason);
+
+        auditLog(admin.getId(), "FORCE_FREE_SEAT", "Chair", id, "occupied", "available", reason);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", true);
+        body.put("message", "Seat force freed and next customer seated");
         body.put("data", chair);
         return ResponseEntity.ok(body);
     }

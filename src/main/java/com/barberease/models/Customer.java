@@ -1,5 +1,6 @@
 package com.barberease.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -22,13 +23,17 @@ public class Customer {
     @Column(nullable = false, length = 20)
     private String phone;
 
+    // WRITE_ONLY: accepted in request body but NEVER serialized to response (hides hash)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
     @Column(columnDefinition = "TEXT")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String address;
 
     @Column(length = 20)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String gender;
 
     @JsonProperty("is_active")
@@ -36,9 +41,11 @@ public class Customer {
     private boolean isActive = true;
 
     @Column(name = "last_login")
+    @JsonIgnore
     private LocalDateTime lastLogin;
 
     @Column(name = "wallet_balance", nullable = false, precision = 10, scale = 2)
+    @JsonIgnore
     private BigDecimal walletBalance = new BigDecimal("100.00");
 
     @Column(name = "created_at", nullable = false, updatable = false)

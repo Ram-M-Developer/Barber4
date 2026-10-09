@@ -400,35 +400,99 @@ public class QueueService {
     }
 
     public void recalculatePositions() {
+        // Recalculate all "waiting" queue entries globally using strict FIFO (createdAt order)
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        List<Chair> chairs = chairRepository.findAll();
-        for (Chair chair : chairs) {
-            List<Queue> chairWaiting = queueRepository.findByChairIdAndStatusAndCreatedAtAfterOrderByCreatedAtAsc(
-                    chair.getId(), "waiting", startOfDay);
-            for (int i = 0; i < chairWaiting.size(); i++) {
-                Queue entry = chairWaiting.get(i);
-                int newPos = i + 1;
+        List<Queue> allWaiting = queueRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtAsc("waiting", startOfDay);
+        if (allWaiting.isEmpty()) {
+            allWaiting = queueRepository.findByStatusOrderByCreatedAtAsc("waiting");
+        }
+        for (int i = 0; i < allWaiting.size(); i++) {
+            Queue entry = allWaiting.get(i);
+            int newPos = i + 1;
+            if (entry.getPosition() != newPos) {
                 entry.setPosition(newPos);
-                int dur = (entry.getService() != null && entry.getService().getDurationMinutes() > 0)
-                        ? entry.getService().getDurationMinutes() : 30;
-                entry.setEstimatedWaitMinutes(Math.max(0, (newPos - 1) * dur));
-                queueRepository.save(entry);
             }
+            int dur = (entry.getService() != null && entry.getService().getDurationMinutes() > 0)
+                    ? entry.getService().getDurationMinutes() : 30;
+            entry.setEstimatedWaitMinutes(Math.max(0, (newPos - 1) * dur));
+            queueRepository.save(entry);
+        }
+    }
+
+    public Queue skipQueueEntry(Long queueId) {
+        Queue entry = queueRepository.findById(queueId)
+                .orElseThrow(() -> new IllegalArgumentException("Queue entry not found"));
+
+        if (!Arrays.asList("waiting", "called").contains(entry.getStatus())) {
+            throw new IllegalStateException("Only waiting or called customers can be skipped");
         }
 
-        // Also handle queues without assigned chair
-        List<Queue> unassigned = queueRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtAsc("waiting", startOfDay);
-        int unassignedPos = 1;
-        for (Queue entry : unassigned) {
-            if (entry.getChair() == null) {
-                entry.setPosition(unassignedPos);
-                int dur = (entry.getService() != null && entry.getService().getDurationMinutes() > 0)
-                        ? entry.getService().getDurationMinutes() : 30;
-                entry.setEstimatedWaitMinutes(Math.max(0, (unassignedPos - 1) * dur));
-                queueRepository.save(entry);
-                unassignedPos++;
-            }
+        entry.setStatus("skipped");
+        entry.setCompletedAt(LocalDateTime.now());
+        Queue saved = queueRepository.save(entry);
+
+        // Release chair if assigned
+        if (entry.getChair() != null) {
+            Chair chair = entry.getChair();
+            chair.setStatus("available");
+            chair.setReservedByCustomer(null);
+            chair.setReservedAt(null);
+            chairRepository.save(chair);
         }
+
+        // Cancel token
+        List<Token> tokens = tokenRepository.findByQueueId(entry.getId());
+        if (tokens.isEmpty() && entry.getTokenNumber() != null) {
+            tokens = tokenRepository.findByTokenNumber(entry.getTokenNumber());
+        }
+        for (Token token : tokens) {
+            token.setStatus("skipped");
+            tokenRepository.save(token);
+        }
+
+        recalculatePositions();
+        webSocketHandler.broadcast("queue-update");
+        webSocketHandler.broadcast("chair-update");
+
+        return saved;
+    }
+
+    public Queue markNoShow(Long queueId) {
+        Queue entry = queueRepository.findById(queueId)
+                .orElseThrow(() -> new IllegalArgumentException("Queue entry not found"));
+
+        if (Arrays.asList("completed", "cancelled", "no_show").contains(entry.getStatus())) {
+            throw new IllegalStateException("Queue entry is already " + entry.getStatus());
+        }
+
+        entry.setStatus("no_show");
+        entry.setCompletedAt(LocalDateTime.now());
+        Queue saved = queueRepository.save(entry);
+
+        // Release chair if assigned
+        if (entry.getChair() != null) {
+            Chair chair = entry.getChair();
+            chair.setStatus("available");
+            chair.setReservedByCustomer(null);
+            chair.setReservedAt(null);
+            chairRepository.save(chair);
+            webSocketHandler.broadcast("chair-update");
+        }
+
+        // Cancel token
+        List<Token> tokens = tokenRepository.findByQueueId(entry.getId());
+        if (tokens.isEmpty() && entry.getTokenNumber() != null) {
+            tokens = tokenRepository.findByTokenNumber(entry.getTokenNumber());
+        }
+        for (Token token : tokens) {
+            token.setStatus("no_show");
+            tokenRepository.save(token);
+        }
+
+        recalculatePositions();
+        webSocketHandler.broadcast("queue-update");
+
+        return saved;
     }
 
     public Map<String, Object> getQueueStats() {
@@ -443,5 +507,15 @@ public class QueueService {
         stats.put("serving", serving);
         stats.put("todayCompleted", todayCompleted);
         return stats;
+    }
+
+    /**
+     * Returns only the count of currently waiting customers.
+     * Safe for customer-facing pages — no personal data exposed.
+     */
+    public long getWaitingCount() {
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        List<Queue> waiting = queueRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtAsc("waiting", startOfDay);
+        return waiting.size();
     }
 }
